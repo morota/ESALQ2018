@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Medical Subject Headings (MeSH) analysis</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Gota Morota    http://morotalab.org/" />
+    <link href="libs/remark-css/example.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Medical Subject Headings (MeSH) analysis
+## Quantitative Genetics and Genomics Workshop <span class="citation">@ESALQ</span>
+### Gota Morota <br /><br /> <a href="http://morotalab.org/" class="uri">http://morotalab.org/</a>
+### 2018/05/25
+
+---
+
+
+
+
+
+
+
+# Medical Subject Headings (MeSH)
+
+- collection of a comprehensive life sciences vocabulary 
+
+- used for indexing articles in MEDLINE database (PubMed)
+
+- includes over 26,000 terms (as of 2011)
+
+- 10 `\(\sim\)` 15 MeSH headings per article
+
+&lt;div align="center"&gt;
+&lt;img src="meshlogo.png" width=800 height=300&gt;
+   &lt;figcaption&gt;NCBI MeSH website&lt;/figcaption&gt;
+&lt;/div&gt;
+
+
+---
+
+# Medical Subject Headings (MeSH)
+&lt;div align="center"&gt;
+&lt;img src="canavez2012PubMed.png" width=800 height=450&gt;
+   &lt;figcaption&gt;Paper in PubMed&lt;/figcaption&gt;
+&lt;/div&gt;
+
+
+---
+
+# Medical Subject Headings (MeSH)
+&lt;div align="center"&gt;
+&lt;img src="canavez2012PubMed2.png" width=500 height=450&gt;
+   &lt;figcaption&gt;MeSH terms&lt;/figcaption&gt;
+&lt;/div&gt;
+
+
+---
+
+# MeSH term-based search
+Enhances PubMed search
+&lt;div align="center"&gt;
+&lt;img src="pubmedMesh1.png" width=800 height=450&gt;
+   &lt;figcaption&gt;MeSH terms&lt;/figcaption&gt;
+&lt;/div&gt;
+
+
+
+---
+
+# MeSH term-based search (cont.)
+Enhances PubMed search
+&lt;div align="center"&gt;
+&lt;img src="pubmedMesh2.png" width=800 height=450&gt;
+   &lt;figcaption&gt;MeSH terms&lt;/figcaption&gt;
+&lt;/div&gt;
+
+
+---
+
+# MeSH Categories
+&lt;div align="center"&gt;
+&lt;img src="table1.png" width=800 height=450&gt;
+   &lt;figcaption&gt;Tsuyuzaki et al. (2015) &lt;/figcaption&gt;
+&lt;/div&gt;
+
+
+---
+# Gene Ontology (GO)
+GO terms are assigned to genes according to 
+
+- biological process
+
+- molecular function
+
+- cellular component
+
+It helps to understand biological interpretation of genes, however,
+
+- GO is restricted to specific ontology
+
+- MeSH contains terms regarding other concepts such as Diseases, Chemicals and Drugs, and Biological Phenomena
+
+
+---
+# MeSH enrichment analysis
+**Hypergeometric test**
+&lt;div align="center"&gt;
+&lt;img src="hypergeometricEq.png" width=400 height=150&gt;
+&lt;/div&gt;
+
+- `\(S\)` is the total number of selected genes
+
+- `\(N\)` is the total number of analyzed genes
+
+- `\(k\)` is the total number of genes in the MeSH term under study
+
+- `\(g\)` is the total number of selected genes in the MeSH term
+
+
+---
+# Hypergeometric test 
+&lt;div align="center"&gt;
+&lt;img src="MeSHhyper.png" width=900 height=650&gt;
+&lt;/div&gt;
+
+
+---
+
+# Hypergeometric test (Example)
+The p-value is the probability of getting `g` or more annotated selected genes in a sample of size `S` from a sample of background genes with `k` annotated genes and `N-k` non-annotated genes.
+
+```r
+S &lt;- 300
+N &lt;- 20000
+k &lt;- 2500
+g &lt;- 50
+# 1
+sum(dhyper(g:min(S,k), k, N-k, S))
+[1] 0.02031964
+phyper(g-1, k, N-k, S, lower.tail=FALSE)
+[1] 0.02031964
+# 2
+1 - sum(dhyper(0:g-1, k, N-k, S))
+[1] 0.02031964
+1 - phyper(g-1, k, N-k, S)
+[1] 0.02031964
+```
+
+---
+# Number of background genes matters 
+
+```r
+S &lt;- 300
+k &lt;- 2500
+g &lt;- 50
+
+N &lt;- 10000; 1 - phyper(g-1, k, N-k, S)
+```
+
+```
+## [1] 0.9998374
+```
+
+```r
+N &lt;- 15000; 1 - phyper(g-1, k, N-k, S)
+```
+
+```
+## [1] 0.5245452
+```
+
+```r
+N &lt;- 20000; 1 - phyper(g-1, k, N-k, S)
+```
+
+```
+## [1] 0.02031964
+```
+
+
+---
+# MeSH ORA framework in Bioconductor
+&lt;div align="center"&gt;
+&lt;img src="Fig1.png" width=800 height=450&gt;
+   &lt;figcaption&gt;Tsuyuzaki et al. (2015) &lt;/figcaption&gt;
+&lt;/div&gt;
+
+
+---
+# Entrez Gene ID `\(\longleftrightarrow\)` MeSH ID
+&lt;div align="center"&gt;
+&lt;img src="Fig6.png" width=800 height=450&gt;
+   &lt;figcaption&gt;Tsuyuzaki et al. (2015) &lt;/figcaption&gt;
+&lt;/div&gt;
+
+
+---
+# Bioconductor packages
+Cattle annotation package 
+&lt;div align="center"&gt;
+&lt;img src="meshBtaegdb.png" width=800 height=200&gt;
+&lt;/div&gt;
+Statistical analysis package
+&lt;div align="center"&gt;
+&lt;img src="meshr.png" width=800 height=210&gt;
+&lt;/div&gt;
+
+
+
+---
+# Example code
+
+```r
+library("meshr")
+library("MeSH.db")
+library("MeSH.Bta.eg.db")
+
+meshParams &lt;- new("MeSHHyperGParams", geneIds = my.geneID3, 
+                 universeGeneIds = univ.geneID3, 
+                annotation = "MeSH.Bta.eg.db", 
+                category = "D", database = "gene2pubmed", 
+                pvalueCutoff = 0.05, pAdjust = "none")
+
+meshR &lt;- meshHyperGTest(meshParams)
+
+head(summary(meshR))
+MESHID Pvalue OddsRatio ExpCount Count Size    MESHTERM            GENEID SOURCEID
+D015815 5.00e-06  12.2754 0.696    7    39 Cell Adhesion Molecules 404118 23800882
+D015815 5.00e-06  12.2754 0.696    7    39 Cell Adhesion Molecules 538486 15117967
+D015815 5.00e-06  12.2754 0.696    7    39 Cell Adhesion Molecules 281485 15117967
+```
+
+
+
+---
+# Visualization for MeSH enrichment analysis 
+
+```r
+tagcloud(mesh.tags, weights=weights, col=colors, order="size") 
+```
+&lt;div align="center"&gt;
+&lt;img src="meshtags.png" width=700 height=500&gt;
+&lt;/div&gt;
+
+
+
+---
+# MeSH analysis in mammalian livestock
+Morota et al. (2015)
+&lt;div align="center"&gt;
+&lt;img src="Morota2015.png" width=800 height=230&gt;
+&lt;/div&gt;
+
+- Dairy Cattle - genes that showed differential expression in preimplantation embryos due to maternal methionine supplementation (Penagaricano et al., 2013)
+
+- Swine - genes related to age at puberty in swine (Tart et al., 2013)
+
+- Horse - genes under selection in Quarter Horse (Petersen et al., 2013)
+
+
+
+
+---
+# Number of annotated genes in cattle, swine, and horse
+&lt;div align="center"&gt;
+&lt;img src="Table1mesh.png" width=800 height=400&gt;
+   &lt;figcaption&gt;Morota et al. (2015) &lt;/figcaption&gt;
+&lt;/div&gt;
+
+
+---
+# Dairy Cattle - RNA-Seq
+&lt;div align="center"&gt;
+&lt;img src="MeSHdairy2.png" width=900 height=490&gt;
+   &lt;figcaption&gt;Morota et al. (2015) &lt;/figcaption&gt;
+&lt;/div&gt;
+
+
+
+---
+# Swine - GWAS
+&lt;div align="center"&gt;
+&lt;img src="MeSHswine.png" width=800 height=490&gt;
+   &lt;figcaption&gt;Morota et al. (2015) &lt;/figcaption&gt;
+&lt;/div&gt;
+
+
+---
+# Horse - Selection signature
+&lt;div align="center"&gt;
+&lt;img src="MeSHhorse.png" width=800 height=490&gt;
+   &lt;figcaption&gt;Morota et al. (2015) &lt;/figcaption&gt;
+&lt;/div&gt;
+
+
+
+
+
+
+---
+# MeSH analysis in chicken
+Morota et al. (2016)
+&lt;div align="center"&gt;
+&lt;img src="Morota2016.png" width=800 height=310&gt;
+&lt;/div&gt;
+
+- Differential expression in abdominal fat tissue between high and low feed efficiency broiler chickens (Zhuo et al., 2015)
+
+- Candidate genes historically impacted by selection in 72 different chicken breeds (Beissinger et al., 2015)
+
+
+
+
+---
+# MeSH annotation of the chicken genome
+Number of known and selected genes annotated by MeSH (Medical Subject Headings) and GO (Gene Ontology).
+
+&lt;div align="center"&gt;
+&lt;img src="chickenGenes.png" width=800 height=310&gt;
+&lt;/div&gt;
+
+
+---
+# Significant MeSH terms 
+
+&lt;div align="center"&gt;
+&lt;img src="chickenTable2.png" width=800 height=415&gt;
+&lt;/div&gt;
+
+
+---
+# MeSH semantic similarity - information content
+
+- semantic similarity among MeSH terms
+
+- semantic similarity among genes
+
+- information content-based measure
+
+&lt;div align="center"&gt;
+&lt;img src="meshHierarchy2.png" width=800 height=390&gt;
+   &lt;figcaption&gt;Morota et al. (2016) &lt;/figcaption&gt;
+&lt;/div&gt;
+
+
+---
+# MeSH semantic similarity (RNA-seq)
+Chemicals and Drugs
+&lt;div align="center"&gt;
+&lt;img src="rnaseqMeSHSimD.png" width=800 height=490&gt;
+   &lt;figcaption&gt;Morota et al. (2016) &lt;/figcaption&gt;
+&lt;/div&gt;
+
+
+---
+# MeSH semantic similarity (selective sweep)
+Chemicals and Drugs
+&lt;div align="center"&gt;
+&lt;img src="epiMeSHSimD.png" width=800 height=450&gt;
+   &lt;figcaption&gt;Morota et al. (2016) &lt;/figcaption&gt;
+&lt;/div&gt;
+
+
+
+---
+# Gene semantic similarity (RNA-seq) 
+&lt;div align="center"&gt;
+&lt;img src="rnaseqGeneSimMeSHBPRevised1.png" width=850 height=400&gt;
+   &lt;figcaption&gt;&lt;/figcaption&gt;
+&lt;/div&gt;
+
+
+
+
+
+---
+# Gene semantic similarity (selective sweep)
+&lt;div align="center"&gt;
+&lt;img src="epiGeneSimMeSHBPRevised1.png" width=850 height=400&gt;
+&lt;/div&gt;
+
+
+
+---
+# Application to Nellore cattle (1)
+G. A. Oliveira Júnior et al. (2017) ([doi:10.2527/jas2017.1752](https://doi.org/10.2527/jas2017.1752))
+&lt;div align="center"&gt;
+&lt;img src="GersonJr2017.png" width=800 height=410&gt;
+&lt;/div&gt;
+
+---
+# Application to Nellore cattle (2)
+Mota et al. (2017) ([doi:10.1017/S1751731117001562](
+https://doi.org/10.1017/S1751731117001562))
+&lt;div align="center"&gt;
+&lt;img src="Mota2018.png" width=800 height=420&gt;
+&lt;/div&gt;
+
+
+---
+# MeSH analysis in maize
+Beissinger and Morota. (2016) ([doi:10.1186/s13007-017-0159-5](https://doi.org/10.1186/s13007-017-0159-5))
+&lt;div align="center"&gt;
+&lt;img src="Beissinger.png" width=800 height=310&gt;
+&lt;/div&gt;
+
+
+- regions under selection during maize **domestication** (Hufford et al., 2012)
+- regions under selection during maize **improvement** (Hufford et al., 2012)
+- regions under selection for **seed size** (Hirsch et al., 2014)
+- regions under selection for **ear number** (Beissinger et  al., 2014) 
+- regions contributing to **inflorescence** traits (Brown et al.,2011)
+
+
+
+
+---
+# MeSH enrichment analysis (maize)
+&lt;div align="center"&gt;
+&lt;img src="MeSHmaize.png" width=700 height=300&gt;
+   &lt;figcaption&gt;&lt;/figcaption&gt;
+&lt;/div&gt;
+
+
+---
+# MeSH semantic similarity (maize)
+&lt;div align="center"&gt;
+&lt;img src="SemanticSimilarity.png" width=800 height=500&gt;
+   &lt;figcaption&gt;&lt;/figcaption&gt;
+&lt;/div&gt;
+
+
+
+---
+# Pitfalls 
+
+What are the pitfalls in MeSH / GO analysis?
+
+- significant MeSH or GO terms can arise from a random set of genes
+
+- easy to make biological sense out of the false-positives 
+
+- inferring the molecular mechanism on the basis of statistically significant MeSH or GO annotations alone is  potentially error-prone
+
+Literature 
+
+- Pavlidis et al. (2012). A critical assessment of storytelling: gene ontology categories and the importance of validating genomic scans. MBE. [doi:10.1093/molbev/mss136](https://doi.org/10.1093/molbev/mss136)
+
+
+
+---
+# Summary 
+MeSH 
+
+- share similar concepts derived from GO annotations
+
+- able to draw additional information not directly provided by GO
+
+- supplementary tool to GO analysis
+
+- &lt;span style="color:red"&gt;good tool for generating hypotheses&lt;/span&gt;
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {window.dispatchEvent(new Event('resize'));});
+(function() {var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler"); if (!r) return; s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }"; d.head.appendChild(s);})();</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+  }
+});
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

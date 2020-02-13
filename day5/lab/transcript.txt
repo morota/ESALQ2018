@@ -1,0 +1,25 @@
+The p-value you want is the probability of getting 100 or more white balls in a sample of size 400 from an urn with 3000 white balls and 12000 black balls. Here are four ways to calculate it.
+
+
+The central hypothesis tested in Pen ̃agaricano et al. (2013) using RNA-Seq was that maternal methionine supplementation around conception can produce epigenetic changes (e.g. DNA methylation) in the fetal  genome leading to changes in gene expression in early embryos.
+This tables shows statistically significant ...
+The hypothesis was supported by the
+MeSH heading Transcription, Genetic (MeSH:D014158) in
+the Phenomena and Processes category, whereas similar
+concepts were not picked up by GO terms .
+
+
+So one  question you may have is what we can do with MeSH?
+The first thing we can do is that we can  perform MeSH enrichment analysis which is similar to GO enrichemnt analysis by 
+using hypergeometric test. The hypergoemetric test is commonly used when we want to see wheter certain 
+annotations are enriched or not. 
+In GO enrihment anlaysis basically we perform this hypgenometric test for each GO terms but 
+here we replace GO with MeSH terms. 
+ 
+# Secondly, we can compute semantic similarity among MeSH terms. 
+So MesH terms are organized in hierchical structure and we can leverage
+this strucure to compute semantic similar between two MeSH terms.
+This is a similarity between two MesH terms based on their biological meanings  of annotation and the closer two terms are in the hierarchy, the higher the similarity measure is between these terms.
+By using this information, we can also compute semantic similarity among genes  based on their assigned MeSH annotations. 
+And GO terms are also organized in hiherchiel strucuture so we can also appy this 
+to g GO terms. 

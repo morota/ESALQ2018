@@ -1,0 +1,274 @@
+---
+title: "MeSH analysis"
+subtitle: "Quantitative Genetics and Genomics Workshop @ESALQ"
+author: "Gota Morota"
+date: "May 25, 2018"
+output:
+  rmdformats::readthedown:
+    highlight: kate
+    self_contained: false
+    code_folding: hide
+---
+
+```{r knitr_init, echo=FALSE, cache=FALSE}
+library(knitr)
+library(rmdformats)
+
+## Global options
+options(max.print="75")
+opts_chunk$set(echo=TRUE,
+	             cache=TRUE,
+               prompt=FALSE,
+               tidy=TRUE,
+               comment=NA,
+               message=FALSE,
+               warning=FALSE)
+opts_knit$set(width=75)
+```
+
+## Beef cattle data 
+[Li et al. (2015)](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0116437) reported a list of differentially expressed genes in the ruminal wall of grass-fed and grain-fed cattle from the RNA-seq study. Visit the journal website and download the file [S3 Table](http://journals.plos.org/plosone/article/asset?unique&id=info:doi/10.1371/journal.pone.0116437.s004). 
+
+## 1. Required R/Bioconductor packages 
+```{r, message=FALSE, eval=FALSE, echo=TRUE}
+library("biomaRt")
+library("readxl")
+library("org.Bt.eg.db")
+library("GOstats")
+library("meshr")
+library("MeSH.db")
+library("MeSH.Bta.eg.db")
+library("corrplot")
+library("meshes")
+library("GOSemSim")
+library("tagcloud")
+library("RColorBrewer")
+```
+
+## 2. Create a vector of background genes
+We first create a vector of background genes. Note that Biomart has recently changed its server from www.biomart.org to www.ensembl.org. 
+```{r, message=TRUE, eval=FALSE, echo=TRUE}
+## access to biomaRt
+mart <- useMart(biomart = "ENSEMBL_MART_ENSEMBL", dataset = "btaurus_gene_ensembl", 
+                host = "www.ensembl.org")
+univ.geneID <- getBM(attributes=c("ensembl_gene_id", "entrezgene", 
+                                  "hgnc_symbol"), mart = mart) # 25898  
+## remove genes with no corresponding Entrez Gene ID
+univ.geneID2 <- univ.geneID[!is.na(univ.geneID[,2]),] # 18279 
+## remove duplicated Entrez Gene ID
+univ.geneID3 <- univ.geneID2[ !duplicated(univ.geneID2[,2]),] # 17745
+
+# or load univgeneID3.Rda
+load("univgeneID3.Rda")
+```
+
+
+## 3. Create a vector of selected genes 
+Secondly, we create a vector of selected genes by reading the input file. 
+```{r eval=FALSE}
+## read data
+my.geneID <- read_excel("journal.pone.0116437.s004.XLS", col_names=TRUE, sheet=1, na = "NA") # 342
+colnames(my.geneID)[1] <- "ensembl_gene_id"
+## merge two files
+my.geneID2 <- merge(my.geneID, univ.geneID3, by ="ensembl_gene_id") # 317
+## remove duplicated Entrez Gene ID
+my.geneID3 <- my.geneID2[ !duplicated(my.geneID2$entrezgene),] # 317
+
+# or load mygeneID3.Rda
+load("mygeneID3.Rda")
+```
+
+## 4. GO enrichment analysis 
+We perform a GO analysis using the *GOstats* package. 
+```{r eval=FALSE}
+paraGO <- new("GOHyperGParams", geneIds=my.geneID3[,6], universeGeneIds=univ.geneID3[,2], 
+              annotation="org.Bt.eg.db", ontology="BP", pvalueCutoff=0.05, 
+              conditional=TRUE, testDirection="over")
+```
+
+GO enrichment analysis for **Biological Process (BP)**
+```{r, eval=FALSE}
+BP <- hyperGTest(paraGO)
+summary(BP)[,c(1,2,7)] 
+```
+
+GO enrichment analysis for **Molecular Function (MF)**
+```{r, eval=FALSE}
+ontology(paraGO) <- "MF"
+MF <- hyperGTest(paraGO)
+summary(MF)[,c(1,2,7)] 
+```
+
+GO enrichment analysis for **Cellular Component (CC)**
+```{r eval=FALSE}
+ontology(paraGO) <- "CC"
+CC <- hyperGTest(paraGO)
+summary(CC)[,c(1,2,7)] 
+```
+
+## 5. MeSH enrichment analysis 
+Then, we perform a MeSH ORA for the category **Chemicals and Drugs** by setting 'category="D"'. 
+```{r eval=FALSE}
+meshParams <- new("MeSHHyperGParams", geneIds = my.geneID3[,6], universeGeneIds = univ.geneID3[,2], 
+                  annotation = "MeSH.Bta.eg.db", category = "D", database = "gene2pubmed", 
+                  pvalueCutoff = 0.05, pAdjust = "none")
+meshR.D <- meshHyperGTest(meshParams)
+summary(meshR.D)[!duplicated(summary(meshR.D)[,7]),c(1,2,7)] 
+```
+
+
+Switching to a different category is easily done by the 'category<-' function. Here, we use **Diseases** (category = "C").  
+```{r eval=FALSE}
+category(meshParams) <- "C"
+meshR.C <- meshHyperGTest(meshParams)
+summary(meshR.C)[!duplicated(summary(meshR.C)[,7]),c(1,2,7)] 
+```
+
+MeSH ORA for **Anatomy** (category = "A"). 
+```{r eval=FALSE}
+category(meshParams) <- "A"
+meshR.A <- meshHyperGTest(meshParams)
+summary(meshR.A)[!duplicated(summary(meshR.A)[,7]),c(1,2,7)] 
+```
+
+MeSH ORA for **Phenomena and Processes** (category = "G"). 
+```{r eval=FALSE, fig.width=8, fig.height=8}
+category(meshParams) <- "G"
+meshR.G <- meshHyperGTest(meshParams)
+summary(meshR.G)[!duplicated(summary(meshR.G)[,7]),c(1,2,7)] 
+```
+
+## 6. Visualization for MeSH enrichment analysis
+```{r, eval=FALSE}
+library(tagcloud)
+meshR <- meshR.G
+meshR.summary <- summary(meshR)[!duplicated(summary(meshR)[,7]),]
+tags <-strmultline(meshR.summary$MESHTERM)
+weights <- -log(meshR.summary$Pvalue)
+or <- meshR.summary$OddsRatio
+colors <- smoothPalette(or, max=4)
+tagcloud(tags, weights=weights, col=colors)
+
+library(RColorBrewer)
+colors <-smoothPalette(weights, pal=brewer.pal( 11, "Spectral" ) )
+tagcloud(tags, weights=weights, col=colors, order="size") 
+```
+
+## 7. GO semantic similarity analysis 
+GO semantic similarity analysis using the *GOSemSim* package. 
+```{r message=FALSE, eval=FALSE}
+library("GOSemSim")
+```
+
+GO semantic similarity analysis for **Biological Process (BP)**
+```{r, eval=FALSE, fig.width=8, fig.height=8}
+library(corrplot)
+goListBP <- summary(BP)[,c(1)][1:50] # top 50
+d.goBP <- godata('org.Bt.eg.db', ont="BP", computeIC=TRUE)
+goSimMatBP <- mgoSim(goListBP, goListBP, semData = d.goBP, measure="Wang", combine = NULL)
+corrplot(goSimMatBP, is.corr = FALSE, type="lower", tl.col = "black", tl.cex = 0.5)
+```
+
+GO semantic similarity analysis for **Molecular Function (MF)**
+```{r, eval=FALSE, fig.width=8, fig.height=8}
+goListMF <- summary(MF)[,c(1)] # 41
+d.goMF <- godata('org.Bt.eg.db', ont="MF", computeIC=TRUE)
+goSimMatMF <- mgoSim(goListMF, goListMF, semData = d.goMF, measure="Wang",  combine=NULL)
+corrplot(goSimMatMF, is.corr = FALSE, type="lower", tl.col = "black", tl.cex = 0.8)
+```
+
+GO semantic similarity analysis for **Cellular Component (CC)**
+```{r, eval=FALSE, fig.width=8, fig.height=8}
+goListCC <- summary(CC)[,c(1)] # 17
+d.goCC <- godata('org.Bt.eg.db', ont="CC", computeIC=TRUE)
+goSimMatCC <- mgoSim(goListCC, goListCC, semData = d.goCC, measure="Wang", combine=NULL)
+corrplot(goSimMatCC, is.corr = FALSE, type="lower", tl.col = "black", tl.cex = 0.8)
+```
+
+
+
+## 8. MeSH semantic similarity analysis 
+MeSH semantic similarity analysis for the category **Chemicals and Drugs** by setting 'category="D"'.
+```{r eval=FALSE, fig.height=8, fig.width=8}
+headingListD <- summary(meshR.D)[!duplicated(summary(meshR.D)[,1]),c(1)]
+d.meshD <- meshdata("MeSH.Bta.eg.db", category='D', computeIC=TRUE, database="gene2pubmed")
+meshSimMatD <- meshSim(headingListD, headingListD, semData=d.meshD , measure="Jiang")
+corrplot(meshSimMatD, is.corr = FALSE, type="lower", tl.col = "black", tl.cex = 0.8)
+```
+
+MeSH semantic similarity **Diseases** (category = "C").  
+```{r eval=FALSE}
+headingListC <- summary(meshR.C)[!duplicated(summary(meshR.C)[,1]),c(1)]
+d.meshC <- meshdata("MeSH.Bta.eg.db", category='C', computeIC=TRUE, database="gene2pubmed")
+meshSimMatC <- meshSim(headingListC, headingListC, semData=d.meshC, measure="Jiang")
+corrplot(meshSimMatC, is.corr = FALSE, type="lower", tl.col = "black", tl.cex = 0.8)
+```
+
+MeSH semantic similarity for **Anatomy** (category = "A"). 
+```{r eval=FALSE}
+headingListA <- summary(meshR.A)[!duplicated(summary(meshR.A)[,1]),c(1)]
+d.meshA <- meshdata("MeSH.Bta.eg.db", category='A', computeIC=TRUE, database="gene2pubmed")
+meshSimMatA <- meshSim(headingListA, headingListA, semData=d.meshA, measure="Jiang")
+corrplot(meshSimMatA, is.corr = FALSE, type="lower", tl.col = "black", tl.cex = 0.8)
+```
+
+MeSH semantic similarity for **Phenomena and Processes** (category = "G"). 
+```{r eval=FALSE}
+headingListG <- summary(meshR.G)[!duplicated(summary(meshR.G)[,1]),c(1)]
+d.meshG <- meshdata("MeSH.Bta.eg.db", category='G', computeIC=TRUE, database="gene2pubmed")
+meshSimMatG <- meshSim(headingListG, headingListG, semData=d.meshG, measure="Jiang")
+corrplot(meshSimMatG, is.corr = FALSE, type="lower", tl.col = "black", tl.cex = 0.8)
+```
+
+## 9. GO-based Gene Semantic Similarity
+Compute gene semantic similarity based on GO annotation from BP. 
+```{r eval=FALSE}
+d.goBP <- godata('org.Bt.eg.db', ont="BP", computeIC=TRUE)
+geneSimBP <- mgeneSim(genes=c(my.geneID3[,6]), semData=d.goBP, measure="Jiang") # 90
+symbolBP <- select(org.Bt.eg.db, rownames(geneSimBP), column="SYMBOL", keytype="ENTREZID")
+rownames(geneSimBP) <- colnames(geneSimBP) <- symbolBP[,2]
+corrplot(geneSimBP, is.corr = FALSE, type="lower", tl.col = "black", tl.cex = 0.8)
+index.geneSimBP <- which(geneSimBP > 0.8 & geneSimBP != 1, arr.ind = TRUE)
+corrplot(geneSimBP[unique(rownames(geneSimBP)[index.geneSimBP[,1]]), unique(rownames(geneSimBP)[index.geneSimBP[,1]])], is.corr = FALSE, type="lower", tl.col = "black", tl.cex = 0.7)
+```
+
+
+## 10. Random set of genes 
+How many siginificant GO/MeSH terms are identified from a random set of genes?
+```{r eval=FALSE}
+set.seed(100)
+nGO <- array()
+nMeSH <- array()
+
+# sample random set of genes 
+for (i in 1:5){
+  cat("iteration ", i,  '\n')
+  ind <- sample(1:nrow(univ.geneID3), 300)
+  random.geneID <- univ.geneID3[ind,]
+
+  # GO ORA for BP
+  paraGO <- new("GOHyperGParams", geneIds=random.geneID[,2], universeGeneIds=univ.geneID3[,2], 
+              annotation="org.Bt.eg.db", ontology="BP", pvalueCutoff=0.05, 
+              conditional=TRUE, testDirection="over")
+  BP <- hyperGTest(paraGO)
+  nGO[i] <- nrow(summary(BP)[,c(1,2,7)])
+
+  # MeSH ORA for Chemicals and Drugs
+  meshParams <- new("MeSHHyperGParams", geneIds = random.geneID[,2], universeGeneIds = univ.geneID3[,2], 
+                  annotation = "MeSH.Bta.eg.db", category = "D", database = "gene2pubmed", 
+                  pvalueCutoff = 0.05, pAdjust = "none")
+  meshR.D <- meshHyperGTest(meshParams)
+  nMeSH[i]  <- nrow(summary(meshR.D)[!duplicated(summary(meshR.D)[,7]),c(1,2,7)])
+}
+
+# average number of GO terms
+mean(nGO)
+# average number of MeSH terms 
+mean(nMeSH)
+```
+
+
+
+
+
+

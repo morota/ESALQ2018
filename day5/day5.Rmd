@@ -1,0 +1,447 @@
+---
+title: "Medical Subject Headings (MeSH) analysis"
+subtitle: "Quantitative Genetics and Genomics Workshop @ESALQ"
+author: "Gota Morota <br /><br /> [http://morotalab.org/](http://morotalab.org/)"
+date: "2018/05/25"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+---
+
+
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+```
+
+
+# Medical Subject Headings (MeSH)
+
+- collection of a comprehensive life sciences vocabulary 
+
+- used for indexing articles in MEDLINE database (PubMed)
+
+- includes over 26,000 terms (as of 2011)
+
+- 10 $\sim$ 15 MeSH headings per article
+
+<div align="center">
+<img src="meshlogo.png" width=800 height=300>
+   <figcaption>NCBI MeSH website</figcaption>
+</div>
+
+
+---
+
+# Medical Subject Headings (MeSH)
+<div align="center">
+<img src="canavez2012PubMed.png" width=800 height=450>
+   <figcaption>Paper in PubMed</figcaption>
+</div>
+
+
+---
+
+# Medical Subject Headings (MeSH)
+<div align="center">
+<img src="canavez2012PubMed2.png" width=500 height=450>
+   <figcaption>MeSH terms</figcaption>
+</div>
+
+
+---
+
+# MeSH term-based search
+Enhances PubMed search
+<div align="center">
+<img src="pubmedMesh1.png" width=800 height=450>
+   <figcaption>MeSH terms</figcaption>
+</div>
+
+
+
+---
+
+# MeSH term-based search (cont.)
+Enhances PubMed search
+<div align="center">
+<img src="pubmedMesh2.png" width=800 height=450>
+   <figcaption>MeSH terms</figcaption>
+</div>
+
+
+---
+
+# MeSH Categories
+<div align="center">
+<img src="table1.png" width=800 height=450>
+   <figcaption>Tsuyuzaki et al. (2015) </figcaption>
+</div>
+
+
+---
+# Gene Ontology (GO)
+GO terms are assigned to genes according to 
+
+- biological process
+
+- molecular function
+
+- cellular component
+
+It helps to understand biological interpretation of genes, however,
+
+- GO is restricted to specific ontology
+
+- MeSH contains terms regarding other concepts such as Diseases, Chemicals and Drugs, and Biological Phenomena
+
+
+---
+# MeSH enrichment analysis
+**Hypergeometric test**
+<div align="center">
+<img src="hypergeometricEq.png" width=400 height=150>
+</div>
+
+- $S$ is the total number of selected genes
+
+- $N$ is the total number of analyzed genes
+
+- $k$ is the total number of genes in the MeSH term under study
+
+- $g$ is the total number of selected genes in the MeSH term
+
+
+---
+# Hypergeometric test 
+<div align="center">
+<img src="MeSHhyper.png" width=900 height=650>
+</div>
+
+
+---
+
+# Hypergeometric test (Example)
+The p-value is the probability of getting `g` or more annotated selected genes in a sample of size `S` from a sample of background genes with `k` annotated genes and `N-k` non-annotated genes.
+```{r, eval=FALSE, echo=TRUE}
+S <- 300
+N <- 20000
+k <- 2500
+g <- 50
+# 1
+sum(dhyper(g:min(S,k), k, N-k, S))
+[1] 0.02031964
+phyper(g-1, k, N-k, S, lower.tail=FALSE)
+[1] 0.02031964
+# 2
+1 - sum(dhyper(0:g-1, k, N-k, S))
+[1] 0.02031964
+1 - phyper(g-1, k, N-k, S)
+[1] 0.02031964
+```
+
+---
+# Number of background genes matters 
+```{r, eval=TRUE, echo=TRUE}
+S <- 300
+k <- 2500
+g <- 50
+
+N <- 10000; 1 - phyper(g-1, k, N-k, S)
+N <- 15000; 1 - phyper(g-1, k, N-k, S)
+N <- 20000; 1 - phyper(g-1, k, N-k, S)
+```
+
+
+---
+# MeSH ORA framework in Bioconductor
+<div align="center">
+<img src="Fig1.png" width=800 height=450>
+   <figcaption>Tsuyuzaki et al. (2015) </figcaption>
+</div>
+
+
+---
+# Entrez Gene ID $\longleftrightarrow$ MeSH ID
+<div align="center">
+<img src="Fig6.png" width=800 height=450>
+   <figcaption>Tsuyuzaki et al. (2015) </figcaption>
+</div>
+
+
+---
+# Bioconductor packages
+Cattle annotation package 
+<div align="center">
+<img src="meshBtaegdb.png" width=800 height=200>
+</div>
+Statistical analysis package
+<div align="center">
+<img src="meshr.png" width=800 height=210>
+</div>
+
+
+
+---
+# Example code
+```{r, eval=FALSE, echo=TRUE}
+library("meshr")
+library("MeSH.db")
+library("MeSH.Bta.eg.db")
+
+meshParams <- new("MeSHHyperGParams", geneIds = my.geneID3, 
+                 universeGeneIds = univ.geneID3, 
+                annotation = "MeSH.Bta.eg.db", 
+                category = "D", database = "gene2pubmed", 
+                pvalueCutoff = 0.05, pAdjust = "none")
+
+meshR <- meshHyperGTest(meshParams)
+
+head(summary(meshR))
+MESHID Pvalue OddsRatio ExpCount Count Size    MESHTERM            GENEID SOURCEID
+D015815 5.00e-06  12.2754 0.696    7    39 Cell Adhesion Molecules 404118 23800882
+D015815 5.00e-06  12.2754 0.696    7    39 Cell Adhesion Molecules 538486 15117967
+D015815 5.00e-06  12.2754 0.696    7    39 Cell Adhesion Molecules 281485 15117967
+```
+
+
+
+---
+# Visualization for MeSH enrichment analysis 
+```{r eval=FALSE, echo=TRUE}
+tagcloud(mesh.tags, weights=weights, col=colors, order="size") 
+```
+<div align="center">
+<img src="meshtags.png" width=700 height=500>
+</div>
+
+
+
+---
+# MeSH analysis in mammalian livestock
+Morota et al. (2015)
+<div align="center">
+<img src="Morota2015.png" width=800 height=230>
+</div>
+
+- Dairy Cattle - genes that showed differential expression in preimplantation embryos due to maternal methionine supplementation (Penagaricano et al., 2013)
+
+- Swine - genes related to age at puberty in swine (Tart et al., 2013)
+
+- Horse - genes under selection in Quarter Horse (Petersen et al., 2013)
+
+
+
+
+---
+# Number of annotated genes in cattle, swine, and horse
+<div align="center">
+<img src="Table1mesh.png" width=800 height=400>
+   <figcaption>Morota et al. (2015) </figcaption>
+</div>
+
+
+---
+# Dairy Cattle - RNA-Seq
+<div align="center">
+<img src="MeSHdairy2.png" width=900 height=490>
+   <figcaption>Morota et al. (2015) </figcaption>
+</div>
+
+
+
+---
+# Swine - GWAS
+<div align="center">
+<img src="MeSHswine.png" width=800 height=490>
+   <figcaption>Morota et al. (2015) </figcaption>
+</div>
+
+
+---
+# Horse - Selection signature
+<div align="center">
+<img src="MeSHhorse.png" width=800 height=490>
+   <figcaption>Morota et al. (2015) </figcaption>
+</div>
+
+
+
+
+
+
+---
+# MeSH analysis in chicken
+Morota et al. (2016)
+<div align="center">
+<img src="Morota2016.png" width=800 height=310>
+</div>
+
+- Differential expression in abdominal fat tissue between high and low feed efficiency broiler chickens (Zhuo et al., 2015)
+
+- Candidate genes historically impacted by selection in 72 different chicken breeds (Beissinger et al., 2015)
+
+
+
+
+---
+# MeSH annotation of the chicken genome
+Number of known and selected genes annotated by MeSH (Medical Subject Headings) and GO (Gene Ontology).
+
+<div align="center">
+<img src="chickenGenes.png" width=800 height=310>
+</div>
+
+
+---
+# Significant MeSH terms 
+
+<div align="center">
+<img src="chickenTable2.png" width=800 height=415>
+</div>
+
+
+---
+# MeSH semantic similarity - information content
+
+- semantic similarity among MeSH terms
+
+- semantic similarity among genes
+
+- information content-based measure
+
+<div align="center">
+<img src="meshHierarchy2.png" width=800 height=390>
+   <figcaption>Morota et al. (2016) </figcaption>
+</div>
+
+
+---
+# MeSH semantic similarity (RNA-seq)
+Chemicals and Drugs
+<div align="center">
+<img src="rnaseqMeSHSimD.png" width=800 height=490>
+   <figcaption>Morota et al. (2016) </figcaption>
+</div>
+
+
+---
+# MeSH semantic similarity (selective sweep)
+Chemicals and Drugs
+<div align="center">
+<img src="epiMeSHSimD.png" width=800 height=450>
+   <figcaption>Morota et al. (2016) </figcaption>
+</div>
+
+
+
+---
+# Gene semantic similarity (RNA-seq) 
+<div align="center">
+<img src="rnaseqGeneSimMeSHBPRevised1.png" width=850 height=400>
+   <figcaption></figcaption>
+</div>
+
+
+
+
+
+---
+# Gene semantic similarity (selective sweep)
+<div align="center">
+<img src="epiGeneSimMeSHBPRevised1.png" width=850 height=400>
+</div>
+
+
+
+---
+# Application to Nellore cattle (1)
+G. A. Oliveira Júnior et al. (2017) ([doi:10.2527/jas2017.1752](https://doi.org/10.2527/jas2017.1752))
+<div align="center">
+<img src="GersonJr2017.png" width=800 height=410>
+</div>
+
+---
+# Application to Nellore cattle (2)
+Mota et al. (2017) ([doi:10.1017/S1751731117001562](
+https://doi.org/10.1017/S1751731117001562))
+<div align="center">
+<img src="Mota2018.png" width=800 height=420>
+</div>
+
+
+---
+# MeSH analysis in maize
+Beissinger and Morota. (2016) ([doi:10.1186/s13007-017-0159-5](https://doi.org/10.1186/s13007-017-0159-5))
+<div align="center">
+<img src="Beissinger.png" width=800 height=310>
+</div>
+
+
+- regions under selection during maize **domestication** (Hufford et al., 2012)
+- regions under selection during maize **improvement** (Hufford et al., 2012)
+- regions under selection for **seed size** (Hirsch et al., 2014)
+- regions under selection for **ear number** (Beissinger et  al., 2014) 
+- regions contributing to **inflorescence** traits (Brown et al.,2011)
+
+
+
+
+---
+# MeSH enrichment analysis (maize)
+<div align="center">
+<img src="MeSHmaize.png" width=700 height=300>
+   <figcaption></figcaption>
+</div>
+
+
+---
+# MeSH semantic similarity (maize)
+<div align="center">
+<img src="SemanticSimilarity.png" width=800 height=500>
+   <figcaption></figcaption>
+</div>
+
+
+
+---
+# Pitfalls 
+
+What are the pitfalls in MeSH / GO analysis?
+
+- significant MeSH or GO terms can arise from a random set of genes
+
+- easy to make biological sense out of the false-positives 
+
+- inferring the molecular mechanism on the basis of statistically significant MeSH or GO annotations alone is  potentially error-prone
+
+Literature 
+
+- Pavlidis et al. (2012). A critical assessment of storytelling: gene ontology categories and the importance of validating genomic scans. MBE. [doi:10.1093/molbev/mss136](https://doi.org/10.1093/molbev/mss136)
+
+
+
+---
+# Summary 
+MeSH 
+
+- share similar concepts derived from GO annotations
+
+- able to draw additional information not directly provided by GO
+
+- supplementary tool to GO analysis
+
+- <span style="color:red">good tool for generating hypotheses</span>
+
+
+
+
+
+
+    
+
+
+

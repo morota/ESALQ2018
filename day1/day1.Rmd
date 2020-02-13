@@ -1,0 +1,753 @@
+---
+title: "Genomic best linear unbiased prediction"
+subtitle: "Quantitative Genetics and Genomics Workshop @ESALQ"
+author: "Gota Morota <br /><br /> [http://morotalab.org/](http://morotalab.org/)"
+date: "2018/05/21"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+```
+
+
+class: inverse, center, middle
+
+# Quantitative Genetics
+
+--
+
+Analysis of complex or multifactorial traits 
+
+--
+
+All genes affect all traits - the question is by how much?
+
+--
+
+Infinitesimal model
+
+--
+
+Oligogenic model
+
+
+---
+
+# What is quantitative genetics?
+
+--
+
+Population genetics
+- **Mathematics** is language of population genetics, **population genetics** is language of **evolution**.
+
+--
+
+Quantitative genetics 
+- **Statistics** is language of quantitative genetics, **quantitative genetics** is language of **complex trait genetics**. 
+
+--
+
+**Phenotypes** first in quantitative genetics
+
+In the era of genomics, phenotype is **king**
+
+
+
+
+
+---
+# Prediction vs. Inference 
+Complex traits are controlled by large number of genes with small effects, and  influenced by both genetics and environments
+
+- Inference (location)
+    - average effects of allele substitution
+
+- Inference (variability)
+   - variance component estimation
+   - genomic heritability
+  
+Combination of above two (e.g., estimate proportion of additive genetic variance explained by QTLs)
+
+- Prediction 
+    - genomic selection
+    - prediction of yet-to-be observed phenotypes
+
+
+
+---
+# Prediction vs. Inference 
+<div align="center">
+<img src="Lo2015PNAS.png" width=900 height=400>
+</div>
+
+* [http://www.pnas.org/content/112/45/13892.abstract
+](http://www.pnas.org/content/112/45/13892.abstract
+)
+
+
+
+---
+# How to parameterize  response variable y?
+
+- Prediction of additive genetic effects 
+     - $\mathbf{ y =  E + a + \boldsymbol{\epsilon}}$ 
+     
+- Prediction of total genetic effects **parametrically**
+     - $\mathbf{ y =  \mathbf{E} + \underbrace{\mathbf{ a + d + a*a + a*d + d*d}}_{g} + } \boldsymbol{\epsilon}$ 
+     
+- Prediction of total genetic effects **non-parametrically**
+     - $\mathbf{ y =  \mathbf{E} + \mathbf{g} + \boldsymbol{\epsilon}}$ 
+
+
+---
+# Phenotypes
+![](plant_01.png)
+&nbsp;
+&nbsp;
+![](plant_02.jpg)
+
+.center[Image data]
+
+
+
+
+
+
+---
+# Genomic information (e.g., SNPs)
+![](SNPs.png)
+
+.center[Repeat of numbers 0, 1, and 2]
+
+---
+# Quantitative genetics
+Connecting image data with genomic information 
+<center>
+<div>
+<img src="plant_01.png" width=100 height=100>
+=
+<img src="SNPs.png" width=100 height=100> + error 
+</div>
+</center>
+This is equivalent to 
+\begin{align*}
+\mathbf{y} &= \mathbf{W}\mathbf{a} + \boldsymbol{\epsilon} \\
+\underbrace{\begin{bmatrix}    
+y_1\\
+y_2\\
+\vdots \\
+y_n\end{bmatrix}}_{n \times 1}  
+&= \underbrace{\begin{bmatrix}
+   w_{11} & w_{12} & \cdots & w_{1m} \\
+    w_{21} & w_{22} & \cdots & w_{2m} \\
+    \vdots & \vdots & \ddots & \vdots \\
+    w_{n1} & w_{n2} & \cdots & w_{nm}
+\end{bmatrix}}_{n \times m} \quad
+\underbrace{\begin{bmatrix}
+a_1\\
+a_2\\
+\vdots \\
+a_m\end{bmatrix}}_{m \times 1} 
++\underbrace{\begin{bmatrix}
+\epsilon_1\\
+\epsilon_2\\
+\vdots \\
+\epsilon_m\end{bmatrix}}_{n \times 1} 
+\end{align*}
+
+where $n$ is the number of individuals (e.g., accessions) and $m$ is the number of SNPs. 
+
+
+
+
+---
+# Genetic values
+Quantitative genetic model:
+
+\begin{align*}
+\mathbf{y} &= \mathbf{g} + \boldsymbol{\epsilon} \\
+\end{align*}
+where $\mathbf{y}$ is the vector of observed phenotypes, $\mathbf{g}$ is the vector of genetic values, and $\boldsymbol{\epsilon}$ is the vector of residuals. 
+
+Example:
+
+| Plant ID   | y           | g  |   e  |
+| ------------- |:-------------:| -----:|------|
+| 1      | 10 | ? |  ?     |
+| 2      |  7     |   ? |  ?    |
+| 3 | 12     |    ? |    ? |
+
+
+
+
+---
+# Genetic values
+Quantitative genetic model:
+
+\begin{align*}
+\mathbf{y} &= \mathbf{g} + \boldsymbol{\epsilon} \\
+\end{align*}
+where $\mathbf{y}$ is the vector of observed phenotypes, $\mathbf{g}$ is the vector of genetic values, and $\boldsymbol{\epsilon}$ is the vector of residuals. 
+
+Example:
+
+| Plant ID    | y           | g  |   e  |
+| ------------- |:-------------:| -----:|------|
+| 1      | 10 | 5 |  5     |
+| 2      |  7     |   6 |  1    |
+| 3 | 12     |    2 |    10 |
+
+
+--
+
+We approximate unknown $\mathbf{g}$ with $\mathbf{Wa}$. 
+
+\begin{align*}
+\mathbf{y} &= \mathbf{g} + \boldsymbol{\epsilon} \\
+ &\approx \mathbf{W}\mathbf{a} + \boldsymbol{\epsilon} 
+\end{align*}
+
+
+
+---
+# Expectation and variance 
+Define the random variable $W$ which counts the number of reference allele $A$.
+\begin{align*}
+  W &=
+  \begin{cases}
+    2 & \text{if } AA  \text{ with frequency } p^2 \\
+    1 & \text{if } Aa \text{ with frequency } 2p(1-p) \\
+    0 & \text{if } aa \text{ with frequency } (1-p)^2
+  \end{cases} \\
+\end{align*}
+where $p$ is the allele frequency of $A$. 
+
+--
+
+Then, 
+\begin{align*}
+E[W] &= 0 \times (1 - p_j)^2 + 1 \times [2p(1-p)] + 2 \times p^2 \\
+&= 2p \\
+E[W^2] &= 0^2 \times (1 - p_j)^2 + 1^2 \times [2p(1-p)] + 2^2 \times p^2 \\
+&= 2p(1-p) + 4p^2 \\
+\end{align*}
+Thus, the variance of allelic counts is 
+\begin{align*}
+Var(W) &= E[W^2] - E[W]^2 \\
+&= 2p(1-p) + 4p^2  - 4p^2\\
+&= 2p(1-p)
+\end{align*}
+
+
+
+---
+# Alternative coding 
+Define the random variable $W$ which counts the number of reference allele $A$.
+\begin{align*}
+  W &=
+  \begin{cases}
+    1 & \text{if } AA  \text{ with frequency } p^2 \\
+    0 & \text{if } Aa \text{ with frequency } 2p(1-p) \\
+    -1 & \text{if } aa \text{ with frequency } (1-p)^2
+  \end{cases} \\
+\end{align*}
+where $p$ is the allele frequency of $A$. 
+
+--
+
+Then, 
+\begin{align*}
+E[W] &= -1 \times (1 - p_j)^2 + 0 \times [2p(1-p)] + 1 \times p^2 \\
+&= −(1 − 2p + p^2) + p^2 = 2p-1 \\
+E[W^2] &= (-1)^2 \times (1 - p_j)^2 + 0^2 \times [2p(1-p)] + 1^2 \times p^2 \\
+&= 1 − 2p + p^2 +p^2  = 2p^2 − 2p + 1 \\
+\end{align*}
+Thus, the variance of allelic counts is 
+\begin{align*}
+Var(W) &= E[W^2] - E[W]^2 \\
+&= 2p^2 − 2p + 1 − (4p^2 − 4p + 1)\\
+&= -2p^2 + 2p = 2p(1-p)
+\end{align*}
+
+
+
+
+---
+# Centered marker codes  
+
+\begin{align*}
+  W - E(W) &=
+  \begin{cases}
+    2 -2p & \text{if } AA  \text{ with frequency } p^2 \\
+    1 - 2p & \text{if } Aa \text{ with frequency } 2p(1-p) \\
+    0 - 2p & \text{if } aa \text{ with frequency } (1-p)^2
+  \end{cases} \\
+\end{align*}
+
+
+\begin{align*}
+  W - E(W) &=
+  \begin{cases}
+    1 - (2p-1) = 2 -2p& \text{if } AA  \text{ with frequency } p^2 \\
+    0 - (2p-1)  = 1 - 2p & \text{if } Aa \text{ with frequency } 2p(1-p) \\
+    -1 - (2p-1) = 0 - 2p & \text{if } aa \text{ with frequency } (1-p)^2
+  \end{cases} \\
+\end{align*}
+where $p$ is the allele frequency of $A$. 
+
+Therefore, the variance and the centered codes are the same. 
+
+
+
+
+
+
+
+
+---
+# Genomic relationship matrix (1)
+Recall that
+\begin{align*}
+\mathbf{y} &= \mathbf{g} + \boldsymbol{\epsilon} = \mathbf{W}_c\mathbf{a} + \boldsymbol{\epsilon}
+\end{align*}
+
+Assume genetic value is parameterized as $g_{i} = \sum w_{ij} a_j$
+where both $w$ and $a$ are treated as random and independent. 
+Assuming linkage equilibrium of markers (all loci are mutually independent) 
+\begin{align*}
+\sigma^2_g &= \sum_j 2 p_j(1-p_j) \cdot \sigma^2_{a_j}. \notag \\
+\end{align*}
+Under the homogeneous marker variance assumption
+\begin{align}
+\sigma^2_{a} &= \frac{\sigma^2_g}{2 \sum_j p_j(1-p_j) }.
+\end{align}
+Then, variance of genetic values is 
+\begin{align*}
+Var(\mathbf{g}) &= Var(\mathbf{W}_c\mathbf{a}) = \mathbf{W_cW'_c}\sigma^2_{a} \\
+&= \frac{\mathbf{W_cW'_c}}{2 \sum_j p_j(1-p_j)} \sigma^2_g = \mathbf{G}\sigma^2_g
+\end{align*}
+
+
+
+
+---
+# Genomic relationship matrix (2)
+Similarly, 
+\begin{align*}
+\sigma^2_g &=   \sum^m_{j=1} 2p_{j}(1 - p_j)\sigma^2_{a}  \\
+&= m \sigma^2_{a}
+\end{align*}
+
+- homogeneous marker variance assumption
+
+- if assumed that all markers have variance 1 (following standardizing marker genotypes) 
+
+- the marked genetic variance is given by the sum of individual marker variances 
+
+\begin{align*}
+\sigma^2_{a} = \sigma^2_g / m
+\end{align*}
+
+
+Then, variance of genetic values is 
+\begin{align*}
+Var(\mathbf{g}) &= Var(\mathbf{W}_{cs}\mathbf{a}) = \mathbf{W_{cs}W'_{cs}}\sigma^2_{a} \\
+&= \frac{\mathbf{W_{cs}W'_{cs}}}{m} \sigma^2_g = \mathbf{G}\sigma^2_g
+\end{align*}
+
+
+
+
+---
+# GWAS vs. Prediction
+![](https://upload.wikimedia.org/wikipedia/commons/1/12/Manhattan_Plot.png)
+.right[[Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Manhattan_Plot.png)]
+
+
+
+
+---
+# Missing heritability
+![](https://www.nature.com/news/2008/081105/images/Heritability.jpg)
+.right[[doi:10.1038/456018a](https://www.nature.com/news/2008/081105/full/456018a.html)]
+
+
+- Variance explained by genome-wide significant SNPs (GWAS heritability)
+
+- Variance explained by all SNPs on the DNA microarray chip (genomic heritability)
+
+- Variance explained by pedigree (trait heritability)
+
+
+
+---
+# Variance explained
+<div align="center">
+<img src="missh2.png" width=700 height=400>
+</div>
+
+GWAS heritability $<$  genomic heritability  $\leq$ trait heritability
+
+
+
+
+
+
+
+---
+# Genomic prediction - use all available markers
+![](mhg2001.png)
+.center[[Meuwissen et al. (2001)](http://www.genetics.org/content/157/4/1819)]
+
+
+.pull-left[
+- Genomic selection
+- Genome-enabled selection
+- Genome-assisted selection
+- Genomic prediction
+- Genome-enabled prediction
+- Genome-assisted prediction
+]
+
+.pull-right[
+- generation interval
+- prediction performance
+]
+
+
+
+
+---
+# Genomic selection vs. Marker assisted selection
+<div align="center">
+<img src="nakayaIsobe.png" width=600 height=400><p><a href="https://academic.oup.com/aob/article/110/6/1303/110713"> Nakaya and Isobe (2012)</a>
+</div>
+
+
+
+---
+# How to fit all SNPs simultaneously?
+
+[Curse of dimensionality](https://en.wikipedia.org/wiki/Curse_of_dimensionality)
+
+* add a penalty function to OLS (e.g., ridge regression and LASSO)
+
+* treat SNPs as random effects (BLUP)
+
+* become a Bayesian 
+
+
+
+---
+class: inverse, center, middle
+
+# GBLUP
+
+
+
+
+---
+# Genomic best linear unbiased prediction
+Suppose underlying signal is given by  
+$$
+\mathbf{y} = \mathbf{g} + \boldsymbol{\epsilon}
+$$
+
+We approximate the vector of genetic values $\mathbf{g}$ with a linear function  
+
+$$
+\mathbf{y} = \mathbf{W}\mathbf{a} + \boldsymbol{\epsilon}
+$$
+
+- $\mathbf{W}$ is the centered $n$ $\times$ $m$ matrix of additive marker genotypes 
+
+- $\mathbf{a}$ is the vector of regression coefficients on marker genotypes 
+
+- $\boldsymbol{\epsilon}$ is the residual 
+
+
+---
+# Genomic best linear unbiased prediction
+Variance-covariance matrix of $\mathbf{y}$ is
+\begin{align*}
+\mathbf{V}_y &= \mathbf{V}_g + \mathbf{V}_{\epsilon} \\
+&= \mathbf{WW'}\sigma^2_{a} + \mathbf{I} \sigma^2_{\epsilon}
+\end{align*}
+
+- $\mathbf{a} \sim N(0, \mathbf{I}\sigma^2_{\mathbf{a}})$  
+
+- $\boldsymbol{\epsilon} \sim N(0, \mathbf{I}\sigma^2_{\boldsymbol{\epsilon}})$
+
+- $\mathbf{V}_g = \mathbf{WW'}\sigma^2_{a}$ is the covariance matrix due to markers
+
+
+
+---
+# Genomic best linear unbiased prediction
+If normality is assumed, the best linear unbiased prediction (BLUP) of $\mathbf{g}$ $(\hat{\mathbf{g}})$ is the conditional mean of $\mathbf{g}$ given the data  
+\begin{align}
+BLUP(\hat{\mathbf{g}}) &= E(\mathbf{g}|\mathbf{y}) = E[\mathbf{g}] + Cov(\mathbf{g}, \mathbf{y}^T) Var(\mathbf{y})^{-1}  [\mathbf{y} - E(\mathbf{y})] \notag \\
+&=  Cov(\mathbf{W}\mathbf{a}, \mathbf{y}^T)\cdot \mathbf{V}_y^{-1}  \mathbf{y}  \notag \\
+&= \mathbf{WW'}\sigma^2_{\mathbf{a}} [\mathbf{WW'}\sigma^2_{a} + \mathbf{I} \sigma^2_{\epsilon}]^{-1}  \mathbf{y}  \notag \\
+&= [\mathbf{I} +    \frac{\sigma^2_{\epsilon}}{\mathbf{WW'}\sigma^2_{a}} ]^{-1}  \mathbf{y}  \\
+&= [\mathbf{I} +  (\mathbf{WW'})^{-1}  \frac{\sigma^2_{\epsilon}}{\sigma^2_{a}} ]^{-1}  \mathbf{y}, 
+\end{align}
+assuming that $\mathbf{WW'}$ is invertible
+
+- $Cov(\mathbf{W}) = \mathbf{WW'}$  is a covariance matrix of marker genotypes (provided that $X$ is centered), often considered to be the simplest form of additive genomic relationship kernel, $\mathbf{G}$. 
+
+
+---
+# Genomic best linear unbiased prediction
+We can refine this kernel $Cov(\mathbf{W}) = \mathbf{WW'}$ by relating genetic variance $\sigma^2_g$ and marker genetic variance $\sigma^2_{a}$ under the following assumptions
+
+Assume genetic value is parameterized as 
+$g_{i} = \sum w_{ij} a_j$ 
+where both $x$ and $a$ are treated as random and independent. 
+
+Assuming linkage  equilibrium of markers (all loci are mutually independent) 
+\begin{align*}
+\sigma^2_g &= \sum_j 2 p_j(1-p_j) \cdot \sigma^2_{a_j}. \notag \\
+\end{align*}
+Under the homogeneous marker variance assumption
+\begin{align}
+\sigma^2_{a} &= \frac{\sigma^2_g}{2 \sum_j p_j(1-p_j) }.
+\end{align}
+
+
+
+---
+# Genomic best linear unbiased prediction
+Recall that 
+\begin{align}
+BLUP(\hat{\mathbf{g}}) &= [\mathbf{I} +  (\mathbf{WW'})^{-1}  \frac{\sigma^2_{\epsilon}}{\sigma^2_{a}} ]^{-1}  \mathbf{y}, 
+\end{align}
+
+Replacing $\sigma^2_{\beta}$ we get 
+\begin{align}
+BLUP(\hat{\mathbf{g}}) &= \left [\mathbf{I} +    (\mathbf{WW'})^{-1} \frac{\sigma^2_{\epsilon}}{ \frac{ \sigma^2_{g}}{2 \sum_j p_j(1-p_j)}} \right ]^{-1}  \mathbf{y}  \notag \\ 
+&= \left [\mathbf{I} +    \mathbf{G}^{-1} \frac{\sigma^2_{\epsilon}}{ \sigma^2_g} \right ]^{-1}  \mathbf{y}  
+\end{align}
+where $\mathbf{G} = \frac{\mathbf{WW'}}{2 \sum_j p_j(1-p_j)}$ is known as the first $\mathbf{G}$ matrix  introduced in VanRaden (2008)
+
+---
+# Genomic best linear unbiased prediction
+Similarly, 
+\begin{align}
+\sigma^2_g =   \sum^m_{j=1} 2p_{j}(1 - p_j)\sigma^2_{a} = m \sigma^2_{a}
+\end{align}
+
+- if it is assumed that all markers have variance 1 (following standardizing marker genotypes) 
+
+- the marked genetic variance is given by the sum of individual marker variances 
+
+$$
+\sigma^2_{a} = \sigma^2_g / m
+$$
+
+---
+# Genomic best linear unbiased prediction
+Replacing $\sigma^2_{a}$ we get 
+\begin{align}
+BLUP(\hat{\mathbf{g}}) &= \left [\mathbf{I} +    (\mathbf{WW}^T)^{-1} \frac{\sigma^2_{\epsilon}}{ \frac{ \sigma^2_{g}}{m}} \right ]^{-1}  \mathbf{y}  \notag \\ 
+&= \left [\mathbf{I} +    \mathbf{G}^{-1} \frac{\sigma^2_{\epsilon}}{ \sigma^2_g} \right ]^{-1}  \mathbf{y}  
+\end{align}
+
+where $\mathbf{G} = \frac{\mathbf{WW}^T }{m}$ is known as the second $\mathbf{G}$ matrix  introduced in VanRaden (2008)
+
+---
+# GBLUP from mixed model equations (MME)
+Suppose we have fixed effects and SNP covariates 
+\begin{align}
+\mathbf{y} &= \mathbf{Xb} + \mathbf{Zg} + \mathbf{e}
+\end{align}
+where $\mathbf{g} \sim N(0, \mathbf{G}\sigma^2_u)$ and $\mathbf{e} \sim N(0, \mathbf{I}\sigma^2_e)$. 
+
+Then MME is  
+$$\begin{bmatrix}
+\mathbf{X'X} &  \mathbf{X'Z} \\
+\mathbf{Z'X} &  \mathbf{Z'Z}  + \mathbf{G}^{-1}\frac{\sigma^2_e}{\sigma^2_g}
+\end{bmatrix} \begin{bmatrix}
+\hat{\mathbf{b}} \\
+\hat{\mathbf{g}} 
+\end{bmatrix} = \begin{bmatrix}
+\mathbf{X'y} \\
+\mathbf{Z'y}
+\end{bmatrix}$$
+
+---
+# GBLUP from MME
+When there is no fixed effect, $\mathbf{y}$ is centered, each individual has only one phenotype ( $\mathbf{Z = I}$ ), the MME is 
+$$\begin{align}
+  \left (\mathbf{Z'Z}  + \mathbf{G}^{-1}\frac{\sigma^2_e}{\sigma^2_g} \right) \hat{\mathbf{g}}  &= \mathbf{Z'y} \\
+  \left (\mathbf{I}  + \mathbf{G}^{-1}\frac{\sigma^2_e}{\sigma^2_g} \right) \hat{\mathbf{g}}  &= \mathbf{y} \\
+  \hat{\mathbf{g}} &=  \left (\mathbf{I}  + \mathbf{G}^{-1}\frac{\sigma^2_e}{\sigma^2_g} \right)^{-1} \mathbf{y} 
+\end{align}$$
+
+
+
+---
+class: inverse, center, middle
+
+# RRBLUP
+
+
+---
+## BLUP of marker effects 
+Suppose that the phenotype-genotype mapping function is 
+\begin{align*}
+\mathbf{y} &= \mathbf{g} + \boldsymbol{\epsilon} \\
+\mathbf{y} &= \mathbf{W}\mathbf{a} + \boldsymbol{\epsilon} \\
+\mathbf{a} &\sim N(0, \mathbf{I}\sigma^2_{a})  
+\end{align*}
+The conditional expectation of $\mathbf{a}$ given $\mathbf{y}$ is 
+\begin{align*}
+BLUP(\mathbf{a}) &= E(\mathbf{a}| \mathbf{y})= Cov(\mathbf{a}, \mathbf{y})Var(\mathbf{y})^{-1} [\mathbf{y} - E(\mathbf{y})] \\
+&= Cov(\mathbf{a}, \mathbf{W}\mathbf{a}) [\mathbf{W}\mathbf{W'} \sigma^2_{\mathbf{a}}+ \mathbf{I}\sigma^2_{\boldsymbol{\epsilon}}]^{-1} \mathbf{y} \\
+&= \sigma^2_{\mathbf{a}} \mathbf{W}' [\mathbf{W}\mathbf{W'} \sigma^2_{\mathbf{a}} + \mathbf{I}\sigma^2_{\boldsymbol{\epsilon}}]^{-1} \mathbf{y} \\
+&= \sigma^2_{\mathbf{a}} \mathbf{W'}  (\mathbf{W}\mathbf{W'})^{-1} [ \sigma^2_{\mathbf{a}}\mathbf{I} + (\mathbf{W}\mathbf{W'})^{-1} \sigma^2_{\boldsymbol{\epsilon}}]^{-1}  \mathbf{y} \\
+&=  \mathbf{W}^T  (\mathbf{W}\mathbf{W'})^{-1} [ \mathbf{I} + (\mathbf{W}\mathbf{W'})^{-1}  \frac{\sigma^2_{\boldsymbol{\epsilon}}}{\sigma^2_{\mathbf{a}}} ]^{-1}  \mathbf{y}.
+\end{align*}
+
+Alternatively,
+\begin{align*}
+BLUP(\mathbf{a}) &=  \mathbf{W}^T [ (\mathbf{W}\mathbf{W'}) +  \frac{\sigma^2_{\boldsymbol{\epsilon}}}{\sigma^2_{\mathbf{a}}}\mathbf{I} ]^{-1}  \mathbf{y}. 
+\end{align*}
+
+
+
+---
+# BLUP of marker effects 
+Thus, 
+\begin{align*}
+BLUP(\mathbf{a}) &= \mathbf{W}^T  (\mathbf{W}\mathbf{W'})^{-1} [ \mathbf{I} + (\mathbf{W}\mathbf{W'})^{-1}  \frac{\sigma^2_{\boldsymbol{\epsilon}}}{\sigma^2_{\mathbf{a}}} ]^{-1}  \mathbf{y} \\
+&=  \mathbf{W'}  (\mathbf{W}\mathbf{W'})^{-1} BLUP(\mathbf{g}).
+\end{align*}
+Thus, once we obtain $\hat{\mathbf{g}}$ from GBLUP, BLUP of marker coefficients is given by 
+$\hat{\mathbf{a}} = \mathbf{W'} (\mathbf{W}\mathbf{W'})^{-1} \hat{\mathbf{g}}$
+
+
+
+---
+# How to evaluate prediction performance
+Cross-validation
+
+- take model uncertainty into account
+
+- divide data into training and testing sets
+
+- train the model in the training set
+
+- evaluate predictive performance in the testing set
+
+- predictive correlation: $r = cor(\mathbf{y}, \hat{\mathbf{y}})$
+
+- predictive correlation squared: $R^2 = cor(\mathbf{y}, \hat{\mathbf{y}})^2$
+
+- mean-squared error: $\sum(y - \hat{y})^2/n_{test}$
+
+
+
+---
+# Cross-validation
+<div align="center">
+<img src="Fig1CV.png" width=650 height=450>
+</div>
+.right[[doi:10.1093/jas/sky014](http://dx.doi.org/10.1093/jas/sky014)]
+
+
+
+---
+# K-fold cross-validation
+<div align="center">
+<img src="Fig1-18Bishop.png" width=650 height=450>
+</div>
+.right[[PRML](https://www.microsoft.com/en-us/research/people/cmbishop/)]
+
+---
+# Repeated subsampling cross-validation
+<div align="center">
+<img src="resamplingCV.png" width=600 height=400>
+</div>
+
+* Repeat this process many times (e.g., 100~200)
+* Compute how frequent (%) model A performed better than model B
+* Useful when the number of samples is small
+
+
+---
+# Cross-validation for RRBLUP 
+Training and testing sets partitioning 
+\begin{align*}
+\text{Training} &\in (\mathbf{y}_{trn},\mathbf{W}_{trn} )  \\
+\text{Testing} &\in (\mathbf{y}_{tst},\mathbf{W}_{tst} )  \\
+\mathbf{y}_{trn} &= \mathbf{W}_{trn} \hat{\mathbf{a}}_{trn} + \mathbf{e}_{trn} \\
+\end{align*}
+
+How to do a cross-validation?
+
+--
+
+\begin{align*}
+\hat{\mathbf{g}}_{tst} &= \mathbf{W}_{tst} \hat{\mathbf{a}}_{trn} 
+\end{align*}
+
+--
+
+Then evaluate 
+\begin{align*}
+Cor(\mathbf{y}_{tst}, \hat{\mathbf{g}}_{tst}) = 
+Cor(\mathbf{y}_{tst}, \mathbf{W}_{tst} \hat{\mathbf{a}}_{trn} )
+\end{align*}
+
+
+
+---
+# Cross-validation for GBLUP
+Training and testing sets partitioning 
+\begin{align*}
+\mathbf{y}_{trn} &= \mathbf{g}_{trn} + \mathbf{e}_{trn} \\
+\mathbf{g}_{trn} &\sim N(0, \mathbf{G}_{trn, trn}) \\
+\mathbf{y}_{tst} &= \mathbf{g}_{tst} + \mathbf{e}_{trn} \\
+\mathbf{g}_{tst} &\sim N(0, \mathbf{G}_{tst, tst}) \\
+\end{align*}
+How to do a cross-validation?
+
+--
+
+Compute BLUP of $\mathbf{g}_{tst}$ given $\hat{\mathbf{g}}_{trn}$
+\begin{align*}
+BLUP(\mathbf{g}_{tst}) &= E(\mathbf{g}_{tst}|\hat{\mathbf{g}}_{trn}) \\
+&= Cov(\mathbf{g}_{tst}, \hat{\mathbf{g}}_{trn}) Var(\hat{\mathbf{g}}_{trn})^{-1} [\hat{\mathbf{g}}_{trn} - E(\hat{\mathbf{g}}_{trn})] \\
+&= \mathbf{G}_{tst, trn}\sigma^2_{g} \mathbf{G}_{trn, trn}^{-1} \sigma^{-2}_g \hat{\mathbf{g}}_{trn}  \\
+&= \mathbf{G}_{tst, trn} \mathbf{G}_{trn, trn}^{-1} \hat{\mathbf{g}}_{trn}  \\
+\end{align*}
+
+
+--
+
+Then evaluate 
+\begin{align*}
+Cor(\mathbf{y}_{tst}, \hat{\mathbf{g}}_{tst}) = 
+Cor(\mathbf{y}_{tst}, \mathbf{G}_{tst, trn} \mathbf{G}_{trn, trn}^{-1} \hat{\mathbf{g}}_{trn})
+\end{align*}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

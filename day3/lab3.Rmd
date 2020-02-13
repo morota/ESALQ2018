@@ -1,0 +1,165 @@
+---
+title: "Deterministic formulas for genomic prediction"
+subtitle: "Quantitative Genetics and Genomics Workshop @ESALQ"
+author: "Gota Morota"
+date: "May 23, 2018"
+output:
+  rmdformats::readthedown:
+    highlight: kate
+    self_contained: false
+    code_folding: hide
+---
+
+```{r knitr_init, echo=FALSE, cache=FALSE}
+library(knitr)
+library(rmdformats)
+
+## Global options
+options(max.print="75")
+opts_chunk$set(echo=TRUE,
+	             cache=TRUE,
+               prompt=FALSE,
+               tidy=TRUE,
+               comment=NA,
+               message=FALSE,
+               warning=FALSE)
+opts_knit$set(width=75)
+```
+
+
+
+## Population parameter-based deterministic prediction
+ShinyGPAS - Shiny Genomic Prediction Accuracy Simulator
+```{r, eval=FALSE, echo=TRUE}
+library(shiny)
+library(plotly)
+runApp("app.R")
+```
+
+
+
+## Data
+Resende Jr. et al. (2012) ([DOI: 10.1534/genetics.111.137026](http://dx.doi.org/10.1534/genetics.111.137026)) analyzed 17 traits in loblolly pine (Pinus taeda) data, which include 951 individuals genotyped with 4853 SNPs. In this homework assignment, we will use the derregressed breeding values of crown width across the planting beds at age 6 (CWAC6). Download the [zip](http://www.genetics.org/highwire/filestream/412827/field_highwire_adjunct_files/7/Loblolly_Pine_Resende_.zip) file and type the following code. 
+```{r, eval=FALSE}
+# read phenotype and SNP files
+CWAC6 <- read.csv("Loblolly_Pine_Resende/Phenotypic_Data Folder/DATA_nassau_age6_CWAC.csv", header=TRUE, stringsAsFactors = FALSE)
+SNP <- read.csv("Loblolly_Pine_Resende/Snp_Data.csv", header=TRUE, stringsAsFactors = FALSE)
+
+# remove missing phenotypes 
+na.index <-  which(is.na(CWAC6$Derregressed_BV))
+CWAC6 <- CWAC6[-na.index, ]
+SNP <- SNP[-na.index, ]
+table(CWAC6$Genotype == SNP[,1])
+
+# phenotypes 
+y <- CWAC6$Derregressed_BV
+y <- matrix(y, ncol=1)
+
+# markers 
+SNP <- SNP[,-1] # 861 x 4853
+SNP[SNP == -9] <- NA
+```
+
+
+## Imputation
+Replace missing marker genotypes with mean values. Then store the marker genotypes in a matrix object `W`. 
+```{r, eval=FALSE, echo=TRUE}
+W <- matrix(0, ncol=ncol(SNP), nrow=nrow(SNP))
+for (j in 1:ncol(SNP)){
+  #cat("j = ", j, '\n')
+  W[,j] <- ifelse(is.na(SNP[,j]), mean(SNP[,j], na.rm=TRUE), SNP[,j])
+}
+```
+
+## Quality control
+Perform a quality control by removing markers with MAF < 0.05. How many markers are removed? Save the filtered genotype matrix in `W2`. 
+```{r, eval=FALSE, echo=TRUE}
+freq <- colMeans(W) / 2 
+maf <- ifelse(freq > 0.5, 1-freq, freq)
+maf.index <- which(maf < 0.05)
+length(maf.index)
+W2 <- W[, -maf.index]
+```
+
+## Centering and scaling
+Standardize the genotype matrix to have a mean of zero and variance of one. Save this matrix as `Xs`. 
+```{r, eval=FALSE, echo=TRUE}
+Ws <- scale(W2, center = TRUE, scale = TRUE)
+
+# dimensions 
+n <- nrow(Ws)
+m <- ncol(Ws)
+```
+
+## G matrix
+Compute the second genomic relationship matrix of VanRaden (2008) `G` using the entire markers. Then add a very small positive constant (e.g., 0.001) to the diagonal elements so that `G` matrix is invertible. 
+```{r, eval=FALSE, echo=TRUE}
+G <- tcrossprod(Ws) / ncol(Ws)
+G <- G + diag(n)*0.001
+```
+
+
+## Relationship-based deterministic prediction of VanRaden (2008)
+```{r, eval=FALSE, echo=TRUE}
+# training-testing sets partitioning 
+n.trn <- 761
+n.tst <- 100
+y.trn <- y[1:n.trn]
+y.tst <- y[n.trn+1:n.tst]
+Ws.trn <- Ws[1:n.trn,]
+Ws.tst <- Ws[n.trn+1:n.tst,]
+
+# G matrix
+Gtrn <- tcrossprod(Ws.trn) / ncol(Ws.trn)
+Gtrn <- Gtrn + diag(n.trn)*0.001
+Gtst.trn <- tcrossprod(Ws.tst, Ws.trn) / ncol(Ws.tst)
+
+# When training-testing sets relationship is equal to zero
+lambda <- 1.029561 # fit.trn$Ve / fit.trn$Vu
+I <- diag(n.trn)
+sqrt(matrix(0, ncol=761, nrow=1) %*% solve(Gtrn + I*lambda) %*% matrix(0, nrow=761, ncol=1))
+
+# fit GREML to obtain variance components
+library(rrBLUP)
+fit.trn <- mixed.solve(y=y.trn, K=Gtrn)
+
+# Compute deterministic prediction accuracy
+r <- array()
+for (i in 1:n.tst){
+  cat("Running ", "individual ", i, '\n')
+  r[i] <- sqrt(matrix(Gtst.trn[i,], nrow=1) %*% solve(Gtrn + I*lambda) %*% matrix(Gtst.trn[i,], ncol=1))
+}
+
+# Historgram of accuracy (r)
+hist(r, breaks=25, xlim=c(0,1))
+
+# Average squared relationship vs. Reliability (r^2)
+plot(apply(Gtst.trn^2, 1, median), r^2, xlab="Average squared relationship", ylab="Reliability")
+abline(lm( r^2 ~ apply(Gtst.trn^2, 1, median)), col="red")
+```
+
+
+## Leave-one-out cross-validation
+```{r, eval=FALSE, echo=TRUE}
+# Do not run
+ghat <- array()
+for (i in 1:n.tst){
+  yNA <- y.trn
+  yNA <- c(yNA, NA)
+  cat("Running ", "individual ", i, '\n')
+  Gtrn2 <- rbind(Gtrn, Gtst.trn[i,])
+  Gtrn2 <- cbind(Gtrn2, c(Gtst.trn[i,], G[i+n.trn, i+n.trn]))
+  fit <- mixed.solve(yNA, K=Gtrn2)
+  ghat[i] <- fit$u[n.trn+1]
+}
+
+# square root of heritability
+h <- sqrt(fit$Vu / (fit$Vu + fit$Ve))
+
+# genomic prediction accuracy - cor(g, ghat)/h
+cor(ghat, y.tst)/h # 
+
+# comparison
+mean(r)
+
+```

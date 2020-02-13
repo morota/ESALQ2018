@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="author" content="Gota Morota" />
+
+<meta name="date" content="2018-05-25" />
+
+<title>MeSH analysis</title>
+
+<script src="lab5_files/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="lab5_files/bootstrap-3.3.6/css/bootstrap.min.css" rel="stylesheet" />
+<script src="lab5_files/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+<script src="lab5_files/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<script src="lab5_files/navigation-1.1/tabsets.js"></script>
+<script src="lab5_files/navigation-1.1/codefolding.js"></script>
+<link href="lab5_files/magnific-popup-1.1.0/magnific-popup.css" rel="stylesheet" />
+<script src="lab5_files/magnific-popup-1.1.0/jquery.magnific-popup.min.js"></script>
+<link href="lab5_files/readthedown-0.1/readthedown.css" rel="stylesheet" />
+<script src="lab5_files/readthedown-0.1/readthedown.js"></script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; background-color: #ffffff; color: #1f1c1b; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; background-color: #ffffff; color: #a0a0a0; border-right: 1px solid #a0a0a0; }
+td.sourceCode { padding-left: 5px; }
+pre, code { color: #1f1c1b; background-color: #ffffff; }
+code > span.kw { color: #1f1c1b; font-weight: bold; } /* Keyword */
+code > span.dt { color: #0057ae; } /* DataType */
+code > span.dv { color: #b08000; } /* DecVal */
+code > span.bn { color: #b08000; } /* BaseN */
+code > span.fl { color: #b08000; } /* Float */
+code > span.cn { color: #aa5500; } /* Constant */
+code > span.ch { color: #924c9d; } /* Char */
+code > span.sc { color: #3daee9; } /* SpecialChar */
+code > span.st { color: #bf0303; } /* String */
+code > span.vs { color: #bf0303; } /* VerbatimString */
+code > span.ss { color: #ff5500; } /* SpecialString */
+code > span.im { color: #ff5500; } /* Import */
+code > span.co { color: #898887; } /* Comment */
+code > span.do { color: #607880; } /* Documentation */
+code > span.an { color: #ca60ca; } /* Annotation */
+code > span.cv { color: #0095ff; } /* CommentVar */
+code > span.ot { color: #006e28; } /* Other */
+code > span.fu { color: #644a9b; } /* Function */
+code > span.va { color: #0057ae; } /* Variable */
+code > span.cf { color: #1f1c1b; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #1f1c1b; } /* Operator */
+code > span.bu { color: #644a9b; font-weight: bold; } /* BuiltIn */
+code > span.ex { color: #0095ff; font-weight: bold; } /* Extension */
+code > span.pp { color: #006e28; } /* Preprocessor */
+code > span.at { color: #0057ae; } /* Attribute */
+code > span.re { color: #0057ae; } /* RegionMarker */
+code > span.in { color: #b08000; } /* Information */
+code > span.wa { color: #bf0303; } /* Warning */
+code > span.al { color: #bf0303; font-weight: bold; } /* Alert */
+code > span.er { color: #bf0303; text-decoration: underline; } /* Error */
+code > span. { color: #1f1c1b; } /* Normal */
+</style>
+
+
+</head>
+
+<body>
+
+
+<div id="content" data-toggle="wy-nav-shift">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<nav id="nav-top" role="navigation" aria-label="top navigation">
+    <a role="button" href="#" data-toggle="wy-nav-top"><span class="glyphicon glyphicon-menu-hamburger"></span></a>
+</nav>
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="text-muted">Code</span> <span class="text-muted caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All</a></li>
+</ul>
+</div>
+
+<div id="header">
+<h1 class="title">MeSH analysis</h1>
+<h1 class="subtitle">Quantitative Genetics and Genomics Workshop <span class="citation">@ESALQ</span></h1>
+</div>
+
+
+<div id="table-of-contents">
+    <h2><a href="#content">MeSH analysis</a></h2>
+    <div id="text-table-of-contents">
+      <ul>
+      <li><a href="#beef-cattle-data">Beef cattle data</a></li>
+      <li><a href="#required-rbioconductor-packages">1. Required R/Bioconductor packages</a></li>
+      <li><a href="#create-a-vector-of-background-genes">2. Create a vector of background genes</a></li>
+      <li><a href="#create-a-vector-of-selected-genes">3. Create a vector of selected genes</a></li>
+      <li><a href="#go-enrichment-analysis">4. GO enrichment analysis</a></li>
+      <li><a href="#mesh-enrichment-analysis">5. MeSH enrichment analysis</a></li>
+      <li><a href="#visualization-for-mesh-enrichment-analysis">6. Visualization for MeSH enrichment analysis</a></li>
+      <li><a href="#go-semantic-similarity-analysis">7. GO semantic similarity analysis</a></li>
+      <li><a href="#mesh-semantic-similarity-analysis">8. MeSH semantic similarity analysis</a></li>
+      <li><a href="#go-based-gene-semantic-similarity">9. GO-based Gene Semantic Similarity</a></li>
+      <li><a href="#random-set-of-genes">10. Random set of genes</a></li>
+      </ul>
+    </div>
+</div>
+
+<div id="main">
+<div id="beef-cattle-data" class="section level2">
+<h2>Beef cattle data</h2>
+<p><a href="http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0116437">Li et al. (2015)</a> reported a list of differentially expressed genes in the ruminal wall of grass-fed and grain-fed cattle from the RNA-seq study. Visit the journal website and download the file <a href="http://journals.plos.org/plosone/article/asset?unique&amp;id=info:doi/10.1371/journal.pone.0116437.s004">S3 Table</a>.</p>
+</div>
+<div id="required-rbioconductor-packages" class="section level2">
+<h2>1. Required R/Bioconductor packages</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;biomaRt&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;readxl&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;org.Bt.eg.db&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;GOstats&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;meshr&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;MeSH.db&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;MeSH.Bta.eg.db&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;corrplot&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;meshes&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;GOSemSim&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;tagcloud&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;RColorBrewer&quot;</span>)</code></pre></div>
+</div>
+<div id="create-a-vector-of-background-genes" class="section level2">
+<h2>2. Create a vector of background genes</h2>
+<p>We first create a vector of background genes. Note that Biomart has recently changed its server from www.biomart.org to www.ensembl.org.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## access to biomaRt
+mart &lt;-<span class="st"> </span><span class="kw">useMart</span>(<span class="dt">biomart =</span> <span class="st">&quot;ENSEMBL_MART_ENSEMBL&quot;</span>, <span class="dt">dataset =</span> <span class="st">&quot;btaurus_gene_ensembl&quot;</span>, 
+    <span class="dt">host =</span> <span class="st">&quot;www.ensembl.org&quot;</span>)
+univ.geneID &lt;-<span class="st"> </span><span class="kw">getBM</span>(<span class="dt">attributes =</span> <span class="kw">c</span>(<span class="st">&quot;ensembl_gene_id&quot;</span>, <span class="st">&quot;entrezgene&quot;</span>, <span class="st">&quot;hgnc_symbol&quot;</span>), 
+    <span class="dt">mart =</span> mart)  <span class="co"># 25898  </span>
+## remove genes with no corresponding Entrez Gene ID
+univ.geneID2 &lt;-<span class="st"> </span>univ.geneID[<span class="op">!</span><span class="kw">is.na</span>(univ.geneID[, <span class="dv">2</span>]), ]  <span class="co"># 18279 </span>
+## remove duplicated Entrez Gene ID
+univ.geneID3 &lt;-<span class="st"> </span>univ.geneID2[<span class="op">!</span><span class="kw">duplicated</span>(univ.geneID2[, <span class="dv">2</span>]), ]  <span class="co"># 17745</span>
+
+<span class="co"># or load univgeneID3.Rda</span>
+<span class="kw">load</span>(<span class="st">&quot;univgeneID3.Rda&quot;</span>)</code></pre></div>
+</div>
+<div id="create-a-vector-of-selected-genes" class="section level2">
+<h2>3. Create a vector of selected genes</h2>
+<p>Secondly, we create a vector of selected genes by reading the input file.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## read data
+my.geneID &lt;-<span class="st"> </span><span class="kw">read_excel</span>(<span class="st">&quot;journal.pone.0116437.s004.XLS&quot;</span>, <span class="dt">col_names =</span> <span class="ot">TRUE</span>, <span class="dt">sheet =</span> <span class="dv">1</span>, 
+    <span class="dt">na =</span> <span class="st">&quot;NA&quot;</span>)  <span class="co"># 342</span>
+<span class="kw">colnames</span>(my.geneID)[<span class="dv">1</span>] &lt;-<span class="st"> &quot;ensembl_gene_id&quot;</span>
+## merge two files
+my.geneID2 &lt;-<span class="st"> </span><span class="kw">merge</span>(my.geneID, univ.geneID3, <span class="dt">by =</span> <span class="st">&quot;ensembl_gene_id&quot;</span>)  <span class="co"># 317</span>
+## remove duplicated Entrez Gene ID
+my.geneID3 &lt;-<span class="st"> </span>my.geneID2[<span class="op">!</span><span class="kw">duplicated</span>(my.geneID2<span class="op">$</span>entrezgene), ]  <span class="co"># 317</span>
+
+<span class="co"># or load mygeneID3.Rda</span>
+<span class="kw">load</span>(<span class="st">&quot;mygeneID3.Rda&quot;</span>)</code></pre></div>
+</div>
+<div id="go-enrichment-analysis" class="section level2">
+<h2>4. GO enrichment analysis</h2>
+<p>We perform a GO analysis using the <em>GOstats</em> package.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">paraGO &lt;-<span class="st"> </span><span class="kw">new</span>(<span class="st">&quot;GOHyperGParams&quot;</span>, <span class="dt">geneIds =</span> my.geneID3[, <span class="dv">6</span>], <span class="dt">universeGeneIds =</span> univ.geneID3[, 
+    <span class="dv">2</span>], <span class="dt">annotation =</span> <span class="st">&quot;org.Bt.eg.db&quot;</span>, <span class="dt">ontology =</span> <span class="st">&quot;BP&quot;</span>, <span class="dt">pvalueCutoff =</span> <span class="fl">0.05</span>, <span class="dt">conditional =</span> <span class="ot">TRUE</span>, 
+    <span class="dt">testDirection =</span> <span class="st">&quot;over&quot;</span>)</code></pre></div>
+<p>GO enrichment analysis for <strong>Biological Process (BP)</strong></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">BP &lt;-<span class="st"> </span><span class="kw">hyperGTest</span>(paraGO)
+<span class="kw">summary</span>(BP)[, <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">7</span>)]</code></pre></div>
+<p>GO enrichment analysis for <strong>Molecular Function (MF)</strong></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ontology</span>(paraGO) &lt;-<span class="st"> &quot;MF&quot;</span>
+MF &lt;-<span class="st"> </span><span class="kw">hyperGTest</span>(paraGO)
+<span class="kw">summary</span>(MF)[, <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">7</span>)]</code></pre></div>
+<p>GO enrichment analysis for <strong>Cellular Component (CC)</strong></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ontology</span>(paraGO) &lt;-<span class="st"> &quot;CC&quot;</span>
+CC &lt;-<span class="st"> </span><span class="kw">hyperGTest</span>(paraGO)
+<span class="kw">summary</span>(CC)[, <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">7</span>)]</code></pre></div>
+</div>
+<div id="mesh-enrichment-analysis" class="section level2">
+<h2>5. MeSH enrichment analysis</h2>
+<p>Then, we perform a MeSH ORA for the category <strong>Chemicals and Drugs</strong> by setting ‘category=“D”’.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">meshParams &lt;-<span class="st"> </span><span class="kw">new</span>(<span class="st">&quot;MeSHHyperGParams&quot;</span>, <span class="dt">geneIds =</span> my.geneID3[, <span class="dv">6</span>], <span class="dt">universeGeneIds =</span> univ.geneID3[, 
+    <span class="dv">2</span>], <span class="dt">annotation =</span> <span class="st">&quot;MeSH.Bta.eg.db&quot;</span>, <span class="dt">category =</span> <span class="st">&quot;D&quot;</span>, <span class="dt">database =</span> <span class="st">&quot;gene2pubmed&quot;</span>, 
+    <span class="dt">pvalueCutoff =</span> <span class="fl">0.05</span>, <span class="dt">pAdjust =</span> <span class="st">&quot;none&quot;</span>)
+meshR.D &lt;-<span class="st"> </span><span class="kw">meshHyperGTest</span>(meshParams)
+<span class="kw">summary</span>(meshR.D)[<span class="op">!</span><span class="kw">duplicated</span>(<span class="kw">summary</span>(meshR.D)[, <span class="dv">7</span>]), <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">7</span>)]</code></pre></div>
+<p>Switching to a different category is easily done by the ‘category&lt;-’ function. Here, we use <strong>Diseases</strong> (category = “C”).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">category</span>(meshParams) &lt;-<span class="st"> &quot;C&quot;</span>
+meshR.C &lt;-<span class="st"> </span><span class="kw">meshHyperGTest</span>(meshParams)
+<span class="kw">summary</span>(meshR.C)[<span class="op">!</span><span class="kw">duplicated</span>(<span class="kw">summary</span>(meshR.C)[, <span class="dv">7</span>]), <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">7</span>)]</code></pre></div>
+<p>MeSH ORA for <strong>Anatomy</strong> (category = “A”).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">category</span>(meshParams) &lt;-<span class="st"> &quot;A&quot;</span>
+meshR.A &lt;-<span class="st"> </span><span class="kw">meshHyperGTest</span>(meshParams)
+<span class="kw">summary</span>(meshR.A)[<span class="op">!</span><span class="kw">duplicated</span>(<span class="kw">summary</span>(meshR.A)[, <span class="dv">7</span>]), <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">7</span>)]</code></pre></div>
+<p>MeSH ORA for <strong>Phenomena and Processes</strong> (category = “G”).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">category</span>(meshParams) &lt;-<span class="st"> &quot;G&quot;</span>
+meshR.G &lt;-<span class="st"> </span><span class="kw">meshHyperGTest</span>(meshParams)
+<span class="kw">summary</span>(meshR.G)[<span class="op">!</span><span class="kw">duplicated</span>(<span class="kw">summary</span>(meshR.G)[, <span class="dv">7</span>]), <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">7</span>)]</code></pre></div>
+</div>
+<div id="visualization-for-mesh-enrichment-analysis" class="section level2">
+<h2>6. Visualization for MeSH enrichment analysis</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tagcloud)
+meshR &lt;-<span class="st"> </span>meshR.G
+meshR.summary &lt;-<span class="st"> </span><span class="kw">summary</span>(meshR)[<span class="op">!</span><span class="kw">duplicated</span>(<span class="kw">summary</span>(meshR)[, <span class="dv">7</span>]), ]
+tags &lt;-<span class="st"> </span><span class="kw">strmultline</span>(meshR.summary<span class="op">$</span>MESHTERM)
+weights &lt;-<span class="st"> </span><span class="op">-</span><span class="kw">log</span>(meshR.summary<span class="op">$</span>Pvalue)
+or &lt;-<span class="st"> </span>meshR.summary<span class="op">$</span>OddsRatio
+colors &lt;-<span class="st"> </span><span class="kw">smoothPalette</span>(or, <span class="dt">max =</span> <span class="dv">4</span>)
+<span class="kw">tagcloud</span>(tags, <span class="dt">weights =</span> weights, <span class="dt">col =</span> colors)
+
+<span class="kw">library</span>(RColorBrewer)
+colors &lt;-<span class="st"> </span><span class="kw">smoothPalette</span>(weights, <span class="dt">pal =</span> <span class="kw">brewer.pal</span>(<span class="dv">11</span>, <span class="st">&quot;Spectral&quot;</span>))
+<span class="kw">tagcloud</span>(tags, <span class="dt">weights =</span> weights, <span class="dt">col =</span> colors, <span class="dt">order =</span> <span class="st">&quot;size&quot;</span>)</code></pre></div>
+</div>
+<div id="go-semantic-similarity-analysis" class="section level2">
+<h2>7. GO semantic similarity analysis</h2>
+<p>GO semantic similarity analysis using the <em>GOSemSim</em> package.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;GOSemSim&quot;</span>)</code></pre></div>
+<p>GO semantic similarity analysis for <strong>Biological Process (BP)</strong></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(corrplot)
+goListBP &lt;-<span class="st"> </span><span class="kw">summary</span>(BP)[, <span class="kw">c</span>(<span class="dv">1</span>)][<span class="dv">1</span><span class="op">:</span><span class="dv">50</span>]  <span class="co"># top 50</span>
+d.goBP &lt;-<span class="st"> </span><span class="kw">godata</span>(<span class="st">&quot;org.Bt.eg.db&quot;</span>, <span class="dt">ont =</span> <span class="st">&quot;BP&quot;</span>, <span class="dt">computeIC =</span> <span class="ot">TRUE</span>)
+goSimMatBP &lt;-<span class="st"> </span><span class="kw">mgoSim</span>(goListBP, goListBP, <span class="dt">semData =</span> d.goBP, <span class="dt">measure =</span> <span class="st">&quot;Wang&quot;</span>, 
+    <span class="dt">combine =</span> <span class="ot">NULL</span>)
+<span class="kw">corrplot</span>(goSimMatBP, <span class="dt">is.corr =</span> <span class="ot">FALSE</span>, <span class="dt">type =</span> <span class="st">&quot;lower&quot;</span>, <span class="dt">tl.col =</span> <span class="st">&quot;black&quot;</span>, <span class="dt">tl.cex =</span> <span class="fl">0.5</span>)</code></pre></div>
+<p>GO semantic similarity analysis for <strong>Molecular Function (MF)</strong></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">goListMF &lt;-<span class="st"> </span><span class="kw">summary</span>(MF)[, <span class="kw">c</span>(<span class="dv">1</span>)]  <span class="co"># 41</span>
+d.goMF &lt;-<span class="st"> </span><span class="kw">godata</span>(<span class="st">&quot;org.Bt.eg.db&quot;</span>, <span class="dt">ont =</span> <span class="st">&quot;MF&quot;</span>, <span class="dt">computeIC =</span> <span class="ot">TRUE</span>)
+goSimMatMF &lt;-<span class="st"> </span><span class="kw">mgoSim</span>(goListMF, goListMF, <span class="dt">semData =</span> d.goMF, <span class="dt">measure =</span> <span class="st">&quot;Wang&quot;</span>, 
+    <span class="dt">combine =</span> <span class="ot">NULL</span>)
+<span class="kw">corrplot</span>(goSimMatMF, <span class="dt">is.corr =</span> <span class="ot">FALSE</span>, <span class="dt">type =</span> <span class="st">&quot;lower&quot;</span>, <span class="dt">tl.col =</span> <span class="st">&quot;black&quot;</span>, <span class="dt">tl.cex =</span> <span class="fl">0.8</span>)</code></pre></div>
+<p>GO semantic similarity analysis for <strong>Cellular Component (CC)</strong></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">goListCC &lt;-<span class="st"> </span><span class="kw">summary</span>(CC)[, <span class="kw">c</span>(<span class="dv">1</span>)]  <span class="co"># 17</span>
+d.goCC &lt;-<span class="st"> </span><span class="kw">godata</span>(<span class="st">&quot;org.Bt.eg.db&quot;</span>, <span class="dt">ont =</span> <span class="st">&quot;CC&quot;</span>, <span class="dt">computeIC =</span> <span class="ot">TRUE</span>)
+goSimMatCC &lt;-<span class="st"> </span><span class="kw">mgoSim</span>(goListCC, goListCC, <span class="dt">semData =</span> d.goCC, <span class="dt">measure =</span> <span class="st">&quot;Wang&quot;</span>, 
+    <span class="dt">combine =</span> <span class="ot">NULL</span>)
+<span class="kw">corrplot</span>(goSimMatCC, <span class="dt">is.corr =</span> <span class="ot">FALSE</span>, <span class="dt">type =</span> <span class="st">&quot;lower&quot;</span>, <span class="dt">tl.col =</span> <span class="st">&quot;black&quot;</span>, <span class="dt">tl.cex =</span> <span class="fl">0.8</span>)</code></pre></div>
+</div>
+<div id="mesh-semantic-similarity-analysis" class="section level2">
+<h2>8. MeSH semantic similarity analysis</h2>
+<p>MeSH semantic similarity analysis for the category <strong>Chemicals and Drugs</strong> by setting ‘category=“D”’.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">headingListD &lt;-<span class="st"> </span><span class="kw">summary</span>(meshR.D)[<span class="op">!</span><span class="kw">duplicated</span>(<span class="kw">summary</span>(meshR.D)[, <span class="dv">1</span>]), <span class="kw">c</span>(<span class="dv">1</span>)]
+d.meshD &lt;-<span class="st"> </span><span class="kw">meshdata</span>(<span class="st">&quot;MeSH.Bta.eg.db&quot;</span>, <span class="dt">category =</span> <span class="st">&quot;D&quot;</span>, <span class="dt">computeIC =</span> <span class="ot">TRUE</span>, <span class="dt">database =</span> <span class="st">&quot;gene2pubmed&quot;</span>)
+meshSimMatD &lt;-<span class="st"> </span><span class="kw">meshSim</span>(headingListD, headingListD, <span class="dt">semData =</span> d.meshD, <span class="dt">measure =</span> <span class="st">&quot;Jiang&quot;</span>)
+<span class="kw">corrplot</span>(meshSimMatD, <span class="dt">is.corr =</span> <span class="ot">FALSE</span>, <span class="dt">type =</span> <span class="st">&quot;lower&quot;</span>, <span class="dt">tl.col =</span> <span class="st">&quot;black&quot;</span>, <span class="dt">tl.cex =</span> <span class="fl">0.8</span>)</code></pre></div>
+<p>MeSH semantic similarity <strong>Diseases</strong> (category = “C”).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">headingListC &lt;-<span class="st"> </span><span class="kw">summary</span>(meshR.C)[<span class="op">!</span><span class="kw">duplicated</span>(<span class="kw">summary</span>(meshR.C)[, <span class="dv">1</span>]), <span class="kw">c</span>(<span class="dv">1</span>)]
+d.meshC &lt;-<span class="st"> </span><span class="kw">meshdata</span>(<span class="st">&quot;MeSH.Bta.eg.db&quot;</span>, <span class="dt">category =</span> <span class="st">&quot;C&quot;</span>, <span class="dt">computeIC =</span> <span class="ot">TRUE</span>, <span class="dt">database =</span> <span class="st">&quot;gene2pubmed&quot;</span>)
+meshSimMatC &lt;-<span class="st"> </span><span class="kw">meshSim</span>(headingListC, headingListC, <span class="dt">semData =</span> d.meshC, <span class="dt">measure =</span> <span class="st">&quot;Jiang&quot;</span>)
+<span class="kw">corrplot</span>(meshSimMatC, <span class="dt">is.corr =</span> <span class="ot">FALSE</span>, <span class="dt">type =</span> <span class="st">&quot;lower&quot;</span>, <span class="dt">tl.col =</span> <span class="st">&quot;black&quot;</span>, <span class="dt">tl.cex =</span> <span class="fl">0.8</span>)</code></pre></div>
+<p>MeSH semantic similarity for <strong>Anatomy</strong> (category = “A”).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">headingListA &lt;-<span class="st"> </span><span class="kw">summary</span>(meshR.A)[<span class="op">!</span><span class="kw">duplicated</span>(<span class="kw">summary</span>(meshR.A)[, <span class="dv">1</span>]), <span class="kw">c</span>(<span class="dv">1</span>)]
+d.meshA &lt;-<span class="st"> </span><span class="kw">meshdata</span>(<span class="st">&quot;MeSH.Bta.eg.db&quot;</span>, <span class="dt">category =</span> <span class="st">&quot;A&quot;</span>, <span class="dt">computeIC =</span> <span class="ot">TRUE</span>, <span class="dt">database =</span> <span class="st">&quot;gene2pubmed&quot;</span>)
+meshSimMatA &lt;-<span class="st"> </span><span class="kw">meshSim</span>(headingListA, headingListA, <span class="dt">semData =</span> d.meshA, <span class="dt">measure =</span> <span class="st">&quot;Jiang&quot;</span>)
+<span class="kw">corrplot</span>(meshSimMatA, <span class="dt">is.corr =</span> <span class="ot">FALSE</span>, <span class="dt">type =</span> <span class="st">&quot;lower&quot;</span>, <span class="dt">tl.col =</span> <span class="st">&quot;black&quot;</span>, <span class="dt">tl.cex =</span> <span class="fl">0.8</span>)</code></pre></div>
+<p>MeSH semantic similarity for <strong>Phenomena and Processes</strong> (category = “G”).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">headingListG &lt;-<span class="st"> </span><span class="kw">summary</span>(meshR.G)[<span class="op">!</span><span class="kw">duplicated</span>(<span class="kw">summary</span>(meshR.G)[, <span class="dv">1</span>]), <span class="kw">c</span>(<span class="dv">1</span>)]
+d.meshG &lt;-<span class="st"> </span><span class="kw">meshdata</span>(<span class="st">&quot;MeSH.Bta.eg.db&quot;</span>, <span class="dt">category =</span> <span class="st">&quot;G&quot;</span>, <span class="dt">computeIC =</span> <span class="ot">TRUE</span>, <span class="dt">database =</span> <span class="st">&quot;gene2pubmed&quot;</span>)
+meshSimMatG &lt;-<span class="st"> </span><span class="kw">meshSim</span>(headingListG, headingListG, <span class="dt">semData =</span> d.meshG, <span class="dt">measure =</span> <span class="st">&quot;Jiang&quot;</span>)
+<span class="kw">corrplot</span>(meshSimMatG, <span class="dt">is.corr =</span> <span class="ot">FALSE</span>, <span class="dt">type =</span> <span class="st">&quot;lower&quot;</span>, <span class="dt">tl.col =</span> <span class="st">&quot;black&quot;</span>, <span class="dt">tl.cex =</span> <span class="fl">0.8</span>)</code></pre></div>
+</div>
+<div id="go-based-gene-semantic-similarity" class="section level2">
+<h2>9. GO-based Gene Semantic Similarity</h2>
+<p>Compute gene semantic similarity based on GO annotation from BP.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">d.goBP &lt;-<span class="st"> </span><span class="kw">godata</span>(<span class="st">&quot;org.Bt.eg.db&quot;</span>, <span class="dt">ont =</span> <span class="st">&quot;BP&quot;</span>, <span class="dt">computeIC =</span> <span class="ot">TRUE</span>)
+geneSimBP &lt;-<span class="st"> </span><span class="kw">mgeneSim</span>(<span class="dt">genes =</span> <span class="kw">c</span>(my.geneID3[, <span class="dv">6</span>]), <span class="dt">semData =</span> d.goBP, <span class="dt">measure =</span> <span class="st">&quot;Jiang&quot;</span>)  <span class="co"># 90</span>
+symbolBP &lt;-<span class="st"> </span><span class="kw">select</span>(org.Bt.eg.db, <span class="kw">rownames</span>(geneSimBP), <span class="dt">column =</span> <span class="st">&quot;SYMBOL&quot;</span>, <span class="dt">keytype =</span> <span class="st">&quot;ENTREZID&quot;</span>)
+<span class="kw">rownames</span>(geneSimBP) &lt;-<span class="st"> </span><span class="kw">colnames</span>(geneSimBP) &lt;-<span class="st"> </span>symbolBP[, <span class="dv">2</span>]
+<span class="kw">corrplot</span>(geneSimBP, <span class="dt">is.corr =</span> <span class="ot">FALSE</span>, <span class="dt">type =</span> <span class="st">&quot;lower&quot;</span>, <span class="dt">tl.col =</span> <span class="st">&quot;black&quot;</span>, <span class="dt">tl.cex =</span> <span class="fl">0.8</span>)
+index.geneSimBP &lt;-<span class="st"> </span><span class="kw">which</span>(geneSimBP <span class="op">&gt;</span><span class="st"> </span><span class="fl">0.8</span> <span class="op">&amp;</span><span class="st"> </span>geneSimBP <span class="op">!=</span><span class="st"> </span><span class="dv">1</span>, <span class="dt">arr.ind =</span> <span class="ot">TRUE</span>)
+<span class="kw">corrplot</span>(geneSimBP[<span class="kw">unique</span>(<span class="kw">rownames</span>(geneSimBP)[index.geneSimBP[, <span class="dv">1</span>]]), <span class="kw">unique</span>(<span class="kw">rownames</span>(geneSimBP)[index.geneSimBP[, 
+    <span class="dv">1</span>]])], <span class="dt">is.corr =</span> <span class="ot">FALSE</span>, <span class="dt">type =</span> <span class="st">&quot;lower&quot;</span>, <span class="dt">tl.col =</span> <span class="st">&quot;black&quot;</span>, <span class="dt">tl.cex =</span> <span class="fl">0.7</span>)</code></pre></div>
+</div>
+<div id="random-set-of-genes" class="section level2">
+<h2>10. Random set of genes</h2>
+<p>How many siginificant GO/MeSH terms are identified from a random set of genes?</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">100</span>)
+nGO &lt;-<span class="st"> </span><span class="kw">array</span>()
+nMeSH &lt;-<span class="st"> </span><span class="kw">array</span>()
+
+<span class="co"># sample random set of genes</span>
+<span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="dv">5</span>) {
+    <span class="kw">cat</span>(<span class="st">&quot;iteration &quot;</span>, i, <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)
+    ind &lt;-<span class="st"> </span><span class="kw">sample</span>(<span class="dv">1</span><span class="op">:</span><span class="kw">nrow</span>(univ.geneID3), <span class="dv">300</span>)
+    random.geneID &lt;-<span class="st"> </span>univ.geneID3[ind, ]
+    
+    <span class="co"># GO ORA for BP</span>
+    paraGO &lt;-<span class="st"> </span><span class="kw">new</span>(<span class="st">&quot;GOHyperGParams&quot;</span>, <span class="dt">geneIds =</span> random.geneID[, <span class="dv">2</span>], <span class="dt">universeGeneIds =</span> univ.geneID3[, 
+        <span class="dv">2</span>], <span class="dt">annotation =</span> <span class="st">&quot;org.Bt.eg.db&quot;</span>, <span class="dt">ontology =</span> <span class="st">&quot;BP&quot;</span>, <span class="dt">pvalueCutoff =</span> <span class="fl">0.05</span>, 
+        <span class="dt">conditional =</span> <span class="ot">TRUE</span>, <span class="dt">testDirection =</span> <span class="st">&quot;over&quot;</span>)
+    BP &lt;-<span class="st"> </span><span class="kw">hyperGTest</span>(paraGO)
+    nGO[i] &lt;-<span class="st"> </span><span class="kw">nrow</span>(<span class="kw">summary</span>(BP)[, <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">7</span>)])
+    
+    <span class="co"># MeSH ORA for Chemicals and Drugs</span>
+    meshParams &lt;-<span class="st"> </span><span class="kw">new</span>(<span class="st">&quot;MeSHHyperGParams&quot;</span>, <span class="dt">geneIds =</span> random.geneID[, <span class="dv">2</span>], <span class="dt">universeGeneIds =</span> univ.geneID3[, 
+        <span class="dv">2</span>], <span class="dt">annotation =</span> <span class="st">&quot;MeSH.Bta.eg.db&quot;</span>, <span class="dt">category =</span> <span class="st">&quot;D&quot;</span>, <span class="dt">database =</span> <span class="st">&quot;gene2pubmed&quot;</span>, 
+        <span class="dt">pvalueCutoff =</span> <span class="fl">0.05</span>, <span class="dt">pAdjust =</span> <span class="st">&quot;none&quot;</span>)
+    meshR.D &lt;-<span class="st"> </span><span class="kw">meshHyperGTest</span>(meshParams)
+    nMeSH[i] &lt;-<span class="st"> </span><span class="kw">nrow</span>(<span class="kw">summary</span>(meshR.D)[<span class="op">!</span><span class="kw">duplicated</span>(<span class="kw">summary</span>(meshR.D)[, <span class="dv">7</span>]), <span class="kw">c</span>(<span class="dv">1</span>, 
+        <span class="dv">2</span>, <span class="dv">7</span>)])
+}
+
+<span class="co"># average number of GO terms</span>
+<span class="kw">mean</span>(nGO)
+<span class="co"># average number of MeSH terms</span>
+<span class="kw">mean</span>(nMeSH)</code></pre></div>
+</div>
+</div>
+
+
+</div>
+
+<div id="postamble" data-toggle="wy-nav-shift" class="status">
+<p class="author"><span class="glyphicon glyphicon-user"></span> Gota Morota</p>
+<p class="date"><span class="glyphicon glyphicon-calendar"></span> May 25, 2018</p>
+</div>
+
+
+<script>
+$(document).ready(function () {
+ 	  });
+</script>
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

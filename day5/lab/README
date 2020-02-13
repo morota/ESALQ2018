@@ -1,0 +1,33 @@
+# 2. Create a vector of selected genes 
+Secondly, we create a vector of significant genes by reading the input file. 
+#Data
+#http://journals.plos.org/plosone/article?id=10.1371%2Fjournal.pone.0154118
+```{r warning=FALSE}
+## read data
+my.geneID <- read.table("rnaseqGenes.txt", header=FALSE) # 286
+my.geneID <- read_excel("../data/journal.pone.0152274.s002.XLSX", col_names=TRUE, sheet=1, skip=2, na = "NA")
+colnames(my.geneID)[1] <- "ensembl_gene_id"
+# Pituitary
+my.geneIDp <- subset(my.geneID, my.geneID[,9] == "Pituitary")
+my.geneIDp2 <- subset(my.geneIDp, my.geneIDp[,10] == "Yes")
+my.geneIDp3 <- my.geneIDp2[,c(1,7)]
+## merge two files
+my.geneIDp4 <- merge(my.geneIDp3, univ.geneID3, by ="ensembl_gene_id") # 263
+## remove duplicated Entrez Gene ID
+my.geneIDp5 <- my.geneIDp4[ !duplicated(my.geneIDp4$entrezgene),] # 263
+```
+
+library(BGLR)
+out <- read_bed(bed_file="../data/1136geno.bed",  bim_file="../data/1136geno.bim", fam_file="../data/1136geno.fam", verbose=FALSE)
+p=out$p
+n=out$n
+out=out$x
+#Recode snp to 0,1,2 format using allele 1
+# 0 --> 0
+# 1 --> 1
+# 2 --> NA
+# 3 --> 2
+out[out==2]=NA
+out[out==3]=2
+X=matrix(out,nrow=p,ncol=n,byrow=TRUE)
+X=t(X)
